@@ -47,7 +47,7 @@
 
 ## 2. Tasks
 
-### M1-T1: Authenticated Staff Shell and Protected Persistence
+### Task 1: M1-T1 — Authenticated Staff Shell and Protected Persistence
 
 **Files:** create workspace/API shell, core contracts, auth/authorization/crypto/audit modules, schema, seed and web login/session files above; tests `apps/api/test/auth.integration.spec.ts`, `crypto.integration.spec.ts`, `tests/e2e/staff-login.spec.ts`.
 
@@ -67,7 +67,7 @@ expect(crossOrganizationForeignKeyWrite).rejects.toThrow();
 - [ ] **Step 4 — Verify:** run `npm run test:api -- test/auth.integration.spec.ts`, `npm run test:api -- test/crypto.integration.spec.ts`, `npm run test:e2e -- tests/e2e/staff-login.spec.ts`, `npm run typecheck`, `npm run build`; expect passing login/logout/disable/role/isolation checks and successful builds. Verify production refuses missing encryption/session secrets.
 - [ ] **Step 5 — Commit:** stage only new workspace infrastructure and auth files; commit `feat: add protected staff application shell`.
 
-### M1-T2: Paper Intake, Search, Member Profiles and Configuration
+### Task 2: M1-T2 — Paper Intake, Search, Member Profiles and Configuration
 
 **Files:** create `apps/api/src/members/members.service.ts`, `members.controller.ts`, `member-matching.ts`, `members.repository.ts`, `member-validation.ts`, `reference-data.service.ts`; corresponding `packages/contracts/src/members.ts`; web `staff/members/`, `staff/settings/`; modify schema/seed; tests `apps/api/test/members.integration.spec.ts`, `tests/e2e/staff-intake.spec.ts`.
 
@@ -87,7 +87,7 @@ expect(otherOrgProfile.status).toBe(404);
 - [ ] **Step 4 — Verify:** run API test above and `npm run test:e2e -- tests/e2e/staff-intake.spec.ts`; expect create → search → open to work after reload, missing ID accepted, invalid Thai inputs rejected, staff unable to delete, and cross-organization IDs hidden. Confirm household/disability/ID sensitive values are ciphertext in DB.
 - [ ] **Step 5 — Commit:** scoped member/schema/web files; commit `feat: add staff member intake and search`.
 
-### M1-T3: Case Notes with Encrypted Revisions
+### Task 3: M1-T3 — Case Notes with Encrypted Revisions
 
 **Files:** create `apps/api/src/case-notes/case-notes.service.ts`, `case-notes.controller.ts`, `packages/contracts/src/case-notes.ts`, web `staff/case-notes/`; modify schema; test `apps/api/test/case-notes.integration.spec.ts`.
 
@@ -107,7 +107,7 @@ expect(JSON.stringify(auditRows)).not.toContain('corrected');
 - [ ] **Step 4 — Verify:** run same test; expect complete history, encrypted database text, admin-only soft deletion, concurrent edits producing distinct versions, and exact edit deadline enforcement.
 - [ ] **Step 5 — Commit:** scoped case-note files; commit `feat: preserve encrypted case note history`.
 
-### M1-T4: Printable Form and Signature Receipt
+### Task 4: M1-T4 — Printable Form and Signature Receipt
 
 **Files:** create `apps/api/src/forms/forms.service.ts`, `forms.controller.ts`, `templates/signup-form.html`, `apps/api/test/forms.integration.spec.ts`, `tests/e2e/signup-form.spec.ts`, `infra/pdf/Dockerfile`; add staff profile print/signature controls; copy required licensed font assets from `prototype/fonts/` into production assets.
 

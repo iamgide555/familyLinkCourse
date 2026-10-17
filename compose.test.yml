@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: familylink_test
+      POSTGRES_PASSWORD: synthetic-test-only
+      POSTGRES_DB: familylink_test
+    ports:
+      - '127.0.0.1:55432:5432'
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U familylink_test -d familylink_test']
+      interval: 2s
+      timeout: 3s
+      retries: 20

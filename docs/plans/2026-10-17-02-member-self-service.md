@@ -47,7 +47,7 @@
 
 ## 2. Tasks
 
-### M2-T1: Signup, Invites, Match Queue and Simulated Identity
+### Task 1: M2-T1 — Signup, Invites, Match Queue and Simulated Identity
 
 **Files:** create identity/signup/outbox files and contracts above; modify schema and M1 member matching; tests `apps/api/test/signup.integration.spec.ts`, `identity.integration.spec.ts`, `outbox.integration.spec.ts`.
 
@@ -68,7 +68,7 @@ expect(notificationsAfterRollback).toHaveLength(0);
 - [ ] **Step 4 — Verify:** run the three named API suites, plus `npm run test:api -- test/outbox.integration.spec.ts`; expect atomic token redemption and event rollback. Verify browser signup context gets `403` on profile/course endpoints and no candidate values in its response or logs.
 - [ ] **Step 5 — Commit:** scoped identity/signup/outbox files; commit `feat: add member signup and reviewed matching`.
 
-### M2-T2: Upload Consent, Processing and Document Permissions
+### Task 2: M2-T2 — Upload Consent, Processing and Document Permissions
 
 **Files:** create documents feature and contract files above, `apps/api/test/documents.integration.spec.ts`, `tests/e2e/upload-consent.spec.ts`; extend signup draft/held-file schema and member document records.
 
@@ -89,7 +89,7 @@ expect(storedImageMetadata).not.toHaveProperty('GPS');
 - [ ] **Step 4 — Verify:** run API test and `npm run test:e2e -- tests/e2e/upload-consent.spec.ts`; expect no consent prompt without files, explicit required consent for every attachment type, no upload request before agreement, and watermark/readable content after admin download. Verify no original plaintext file remains after processing and no static URL serves files.
 - [ ] **Step 5 — Commit:** scoped document/schema/UI files; commit `feat: protect member document uploads`.
 
-### M2-T3: Review, Caregiver Links and Profile Changes
+### Task 3: M2-T3 — Review, Caregiver Links and Profile Changes
 
 **Files:** create profile/linking feature files, extend signup review controller/service, contracts `profile.ts`; tests `apps/api/test/member-review.integration.spec.ts`, `profile.integration.spec.ts`.
 
@@ -110,7 +110,7 @@ expect(hiddenFieldPatch.status).toBe(422);
 - [ ] **Step 4 — Verify:** run both API suites; expect complete link/reject/create flow, concurrent link consumption yielding one link, no self-review, no stale caregiver access, no overwrite on stale profile approval, and correctly scoped outbox notices.
 - [ ] **Step 5 — Commit:** scoped review/link/profile files; commit `feat: review member links and profile corrections`.
 
-### M2-T4: Complete Signup and Family Profile Screens
+### Task 4: M2-T4 — Complete Signup and Family Profile Screens
 
 **Files:** create web member/review/document feature folders above, routing and shared validated input components; tests `tests/e2e/member-signup.spec.ts`, `member-profile.spec.ts`, `staff-reviews.spec.ts`.
 

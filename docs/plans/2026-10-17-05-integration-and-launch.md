@@ -45,7 +45,7 @@
 
 ## 2. Tasks
 
-### M5-T1: Real LINE Identity, Menus and Webhooks
+### Task 1: M5-T1 — Real LINE Identity, Menus and Webhooks
 
 **Files:** create LINE/LIFF files above; modify identity binding/configuration, signup/link event hooks and member routes; tests `apps/api/test/line-identity.integration.spec.ts`, `line-webhook.integration.spec.ts`, `tests/e2e/line-session.spec.ts`.
 
@@ -66,7 +66,7 @@ expect(menuForLinkedAccount).toBe('member');
 - [ ] **Step 4 — Verify:** run named API suites and browser auth suite; on actual FamilyLink test accounts run guest signup, caregiver add, reviewed existing-member link, profile, course booking, menu switch, unfollow/follow and browser invite checks. Record real LINE proof with synthetic member data; provider stubs alone do not satisfy acceptance.
 - [ ] **Step 5 — Commit:** scoped LINE/config/web files; commit `feat: integrate verified LINE member access`.
 
-### M5-T2: Outbox Delivery, Fallback, Reminders and Staff Follow-Up
+### Task 2: M5-T2 — Outbox Delivery, Fallback, Reminders and Staff Follow-Up
 
 **Files:** create messaging/job files above; extend M2 schema/outbox and admin notification UI; tests `apps/api/test/notification-worker.integration.spec.ts`, `reminders.integration.spec.ts`, `tests/e2e/notification-followup.spec.ts`.
 
@@ -87,7 +87,7 @@ expect(unreachableNotice.status).toBe('staff_followup');
 - [ ] **Step 4 — Verify:** run API suites and follow-up browser test; require tests for every spec event: signup resolved/rejected, registration result, approval/rejection, promotion, profile review, cancellation, reschedule and session reminder. Against actual LINE/email test recipients verify LINE success, email fallback, grouped reminder and staff follow-up; a forced provider failure must leave visible retry/follow-up state. Run two workers and a simulated crash/restart to prove claim recovery. Verify daily schedule at 09:00 Bangkok and every-15-minute display closure without weakening API time checks.
 - [ ] **Step 5 — Commit:** scoped notification/job/UI files; commit `feat: deliver reliable notices and grouped reminders`.
 
-### M5-T3: Deployment, Recovery, Cleanup and Staff Acceptance
+### Task 3: M5-T3 — Deployment, Recovery, Cleanup and Staff Acceptance
 
 **Files:** create operations files above; wire sanitized API/web monitoring and health checks; tests `apps/api/test/retention.integration.spec.ts`, `production-config.integration.spec.ts`, `tests/e2e/poc-acceptance.spec.ts`.
 

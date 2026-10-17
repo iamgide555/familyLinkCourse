@@ -1,0 +1,82 @@
+<main id="main-content" class="login-grid">
+  <section class="login-form" aria-labelledby="login-title">
+    <h1 id="login-title">เข้าสู่ระบบเจ้าหน้าที่</h1>
+    <p class="form-intro">ใช้อีเมลและรหัสผ่านที่ผู้ดูแลระบบจัดให้</p>
+    @if (error()) {
+      <div class="notice notice-error" role="alert">
+        <strong>ยังเข้าสู่ระบบไม่ได้</strong>
+        <p>{{ error() }}</p>
+      </div>
+    }
+    <form (submit)="submit($event)" novalidate [attr.aria-busy]="busy()">
+      <fieldset [disabled]="busy()">
+        <legend class="sr-only">ข้อมูลเข้าสู่ระบบ</legend>
+        <div class="field">
+          <label for="email">อีเมล</label>
+          <input
+            #emailInput
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="username"
+            inputmode="email"
+            autocapitalize="none"
+            spellcheck="false"
+            required
+            [value]="email()"
+            (input)="email.set(emailInput.value)"
+            [attr.aria-invalid]="emailError() ? 'true' : null"
+            [attr.aria-describedby]="emailError() ? 'email-error' : null"
+          />
+          @if (emailError()) {
+            <p class="field-error" id="email-error">{{ emailError() }}</p>
+          }
+        </div>
+        <div class="field">
+          <div class="password-label">
+            <label for="password">รหัสผ่าน</label
+            ><button
+              class="password-toggle"
+              type="button"
+              aria-controls="password"
+              [attr.aria-pressed]="showPassword()"
+              (click)="showPassword.set(!showPassword())"
+            >
+              {{ showPassword() ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน' }}
+            </button>
+          </div>
+          <input
+            #passwordInput
+            id="password"
+            name="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            autocomplete="current-password"
+            required
+            [value]="password()"
+            (input)="password.set(passwordInput.value)"
+            [attr.aria-invalid]="passwordError() ? 'true' : null"
+            [attr.aria-describedby]="passwordError() ? 'password-error' : null"
+          />
+          @if (passwordError()) {
+            <p class="field-error" id="password-error">{{ passwordError() }}</p>
+          }
+        </div>
+        <button class="button-primary login-submit" type="submit" [disabled]="busy()">
+          {{ busy() ? 'กำลังเข้าสู่ระบบ…' : 'เข้าสู่ระบบ' }}
+        </button>
+      </fieldset>
+    </form>
+    <div class="login-recovery">
+      <h2>ลืมรหัสผ่านหรือยังไม่มีบัญชี?</h2>
+      <p>ติดต่อผู้ดูแลระบบของสมาคมเพื่อขอความช่วยเหลือ</p>
+    </div>
+  </section>
+  <aside class="login-help" aria-labelledby="help-title">
+    <h2 id="help-title">พื้นที่ทำงานของ<br />เจ้าหน้าที่ FamilyLink</h2>
+    <p>ใช้บัญชีของคุณเองทุกครั้ง<br />และออกจากระบบเมื่อใช้งานเสร็จ</p>
+    <div class="member-guidance">
+      <h3>คุณเป็นสมาชิกหรือผู้สมัครคอร์ส?</h3>
+      <p>กรุณาเปิดผ่านเมนูใน LINE ของสมาคม<br />หน้านี้ใช้สำหรับเจ้าหน้าที่เท่านั้น</p>
+    </div>
+  </aside>
+</main>

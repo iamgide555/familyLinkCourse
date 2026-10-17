@@ -45,7 +45,7 @@
 
 ## 2. Tasks
 
-### M4-T1: Attendance, Dashboard and Run Form Printing
+### Task 1: M4-T1 — Attendance, Dashboard and Run Form Printing
 
 **Files:** attendance/dashboard feature files and contracts above, run print UI; tests `apps/api/test/attendance.integration.spec.ts`, `dashboard.integration.spec.ts`, `tests/e2e/session-attendance.spec.ts`.
 
@@ -66,7 +66,7 @@ expect(summary.attended).toBe(actualPresentRecords);
 - [ ] **Step 4 — Verify:** run both API suites and `npm run test:e2e -- tests/e2e/session-attendance.spec.ts`; expect readable mobile roster, saved marks after reload, accurate dashboard across both modes and printable unsigned forms with blank case-note section.
 - [ ] **Step 5 — Commit:** scoped attendance/dashboard/UI files; commit `feat: operate attendance and staff dashboard`.
 
-### M4-T2: Offline Paid Membership and Renewal Records
+### Task 2: M4-T2 — Offline Paid Membership and Renewal Records
 
 **Files:** membership feature/contract/web files above; extend schema/seed; tests `apps/api/test/memberships.integration.spec.ts`, `tests/e2e/membership-renewal.spec.ts`.
 
@@ -87,7 +87,7 @@ expect(expiredMemberRegistration.status).toBe(201);
 - [ ] **Step 4 — Verify:** run API test and `npm run test:e2e -- tests/e2e/membership-renewal.spec.ts`; expect complete upgrade → expiry → renewal → admin void history, deterministic current tier, lifetime behavior, exact money totals and no course eligibility changes.
 - [ ] **Step 5 — Commit:** scoped membership/schema/UI files; commit `feat: record offline membership payments and renewals`.
 
-### M4-T3: Role-Safe Excel, Filters and Organization Settings
+### Task 3: M4-T3 — Role-Safe Excel, Filters and Organization Settings
 
 **Files:** reports/export-policy/settings files and contracts above, web report/settings pages; tests `apps/api/test/reports.integration.spec.ts`, `settings.integration.spec.ts`, `tests/e2e/report-export.spec.ts`.
 

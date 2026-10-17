@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client"
+  output = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  admin
+  staff
+}
+
+model Organization {
+  id String @id @default(uuid())
+  name String
+  users User[]
+  sessions Session[]
+  auditLogs AuditLog[]
+  members Member[]
+  @@map("organizations")
+}
+
+model User {
+  id String @id @default(uuid())
+  organizationId String @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email String
+  name String
+  passwordHash String @map("password_hash")
+  role Role @default(staff)
+  active Boolean @default(true)
+  memberId String? @map("member_id")
+  member Member? @relation(fields: [organizationId, memberId], references: [organizationId, id])
+  createdAt DateTime @default(now()) @map("created_at")
+  sessions Session[]
+  @@unique([organizationId, id])
+  @@unique([organizationId, email])
+  @@map("users")
+}
+
+model Session {
+  id String @id @default(uuid())
+  organizationId String @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  user User @relation(fields: [organizationId, userId], references: [organizationId, id], onDelete: Cascade)
+  tokenHash String @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  @@index([organizationId, userId])
+  @@map("sessions")
+}
+
+model AuditLog {
+  id String @id @default(uuid())
+  organizationId String @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  actorType String @map("actor_type")
+  actorId String? @map("actor_id")
+  action String
+  entity String
+  entityId String @map("entity_id")
+  fields String[]
+  createdAt DateTime @default(now()) @map("created_at")
+  @@index([organizationId, createdAt])
+  @@map("audit_logs")
+}
+
+model Member {
+  id String @id @default(uuid())
+  organizationId String @map("organization_id")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  lineAccountId String? @map("line_account_id")
+  firstName String @map("first_name")
+  lastName String @map("last_name")
+  staffUsers User[]
+  @@unique([organizationId, id])
+  @@map("members")
+}

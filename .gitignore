@@ -13,3 +13,10 @@ playwright-report/
 .impeccable/*.local.json
 apps/api/src/generated/
 .DS_Store
+
+.impeccable/review/
+.implementation/*
+!.implementation/progress.md
+!.implementation/ux/
+.implementation/ux/*
+!.implementation/ux/staff-login-brief.md

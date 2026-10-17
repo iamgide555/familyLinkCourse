@@ -46,7 +46,7 @@
 
 ## 2. Tasks
 
-### M3-T1: Course, Run, Session and Question Configuration
+### Task 1: M3-T1 — Course, Run, Session and Question Configuration
 
 **Files:** create courses/questions files and contracts above; modify schema; web course editor; tests `apps/api/test/course-configuration.integration.spec.ts`, `tests/e2e/create-run.spec.ts`.
 
@@ -66,7 +66,7 @@ expect(requiredQuestionAddition.status).toBe(409);
 - [ ] **Step 4 — Verify:** run API suite and `npm run test:e2e -- tests/e2e/create-run.spec.ts`; expect usable run creation and question selection/order, no existing-run mutation from template changes, and structural lock after a booking later cancelled.
 - [ ] **Step 5 — Commit:** scoped configuration files; commit `feat: configure courses runs and question forms`.
 
-### M3-T2: Transactional Registration, Approval and Snapshot Versions
+### Task 2: M3-T2 — Transactional Registration, Approval and Snapshot Versions
 
 **Files:** create booking lock/service/policy/queue/snapshot files; contracts `bookings.ts`; modify schema; staff/member registration screens; tests `apps/api/test/booking-seats.integration.spec.ts`, `booking-snapshots.integration.spec.ts`, `tests/e2e/course-registration.spec.ts`.
 
@@ -87,7 +87,7 @@ expect(originalSnapshot.answers).toEqual(originalAnswers);
 - [ ] **Step 4 — Verify:** run both API suites and `npm run test:e2e -- tests/e2e/course-registration.spec.ts`; expect no capacity breach under 20 competing requests, correct API deadline boundaries, no approval double-counting, no unsigned gate, consistent queue order and intact snapshot history. Browser-invite-only context remains forbidden.
 - [ ] **Step 5 — Commit:** scoped booking/schema/UI files; commit `feat: reserve seats with independent session outcomes`.
 
-### M3-T3: Cancellation, Rescheduling and Safe Capacity Changes
+### Task 3: M3-T3 — Cancellation, Rescheduling and Safe Capacity Changes
 
 **Files:** create cancellation service; extend courses/policy/queue services and run/session schema; tests `apps/api/test/booking-changes.integration.spec.ts`, `tests/e2e/cancel-reschedule.spec.ts`; extend staff/member registration screens.
 
@@ -108,7 +108,7 @@ expect(capacityBelowReserved.status).toBe(409);
 - [ ] **Step 4 — Verify:** run API suite and `npm run test:e2e -- tests/e2e/cancel-reschedule.spec.ts`; expect one queue winner per freed seat, no promotion after cancellation/cutoff, correct independent session outcomes, and notifications preserving unaffected sessions.
 - [ ] **Step 5 — Commit:** scoped change-policy files; commit `feat: enforce cancellation and rescheduling policies`.
 
-### M3-T4: Atomic Walk-In Intake, Booking and Today's Attendance
+### Task 4: M3-T4 — Atomic Walk-In Intake, Booking and Today's Attendance
 
 **Files:** create `apps/api/src/bookings/walkins.service.ts`, `attendance/attendance.service.ts`, attendance contracts/schema, staff walk-in page; tests `apps/api/test/walkins.integration.spec.ts`, `tests/e2e/walkin.spec.ts`.
 

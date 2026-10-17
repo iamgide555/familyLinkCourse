@@ -1,0 +1,1 @@
+{"name":"@familylink/web","private":true,"scripts":{"dev":"ng serve --host 127.0.0.1 --port 4200","build":"ng build","typecheck":"ngc -p tsconfig.app.json --noEmit"}}

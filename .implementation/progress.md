@@ -11,3 +11,10 @@
 - **Pre-flight T2 → T3/T4:** both consume authorized member reads. Member DTO excludes notes/documents on participant paths.
 - **TDD:** tests precede behavior; every checkbox requires observed verification, not source inspection.
 - **Baseline:** no production source, dependency manifest or executable tests existed; no passing baseline claimed.
+
+## UX Implementation Direction
+
+- **User steering:** focus on UX for older, less tech-confident staff and members; TDD remains required.
+- **Confirmed context:** captured current spec and audience in `PRODUCT.md`; no obsolete prototype registration/attendance exclusions carried over.
+- **Working assumption:** Thai-only labels follow Thai-first prototype/spec while optional language question awaits a reply.
+- **Visual boundary:** inherit existing mint/teal, Sarabun/Kanit world; first change is a focused staff login module, not a visual rebrand.
