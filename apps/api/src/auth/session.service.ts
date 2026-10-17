@@ -86,17 +86,31 @@ export class SessionService {
         'อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบแล้วลองอีกครั้ง',
       );
     }
-    this.failures.delete(rateKey);
-    const token = randomBytes(32).toString('base64url');
-    await this.db.session.create({
-      data: {
-        organizationId: user.organizationId,
-        userId: user.id,
-        tokenHash: this.tokenHash(token),
-        expiresAt: new Date(now.getTime() + IDLE_MS),
-      },
+    const result = await this.db.$transaction(async (tx) => {
+      // Account security changes take the same lock before revoking sessions.
+      await tx.$queryRaw`SELECT id FROM organizations WHERE id = ${user.organizationId} FOR UPDATE`;
+      const current = await tx.user.findUnique({
+        where: { organizationId_id: { organizationId: user.organizationId, id: user.id } },
+      });
+      if (!current?.active || current.passwordHash !== user.passwordHash)
+        throw new AppError(
+          401,
+          'INVALID_CREDENTIALS',
+          'อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบแล้วลองอีกครั้ง',
+        );
+      const token = randomBytes(32).toString('base64url');
+      await tx.session.create({
+        data: {
+          organizationId: current.organizationId,
+          userId: current.id,
+          tokenHash: this.tokenHash(token),
+          expiresAt: new Date(this.clock.now().getTime() + IDLE_MS),
+        },
+      });
+      return { token, user: publicUser(current) };
     });
-    return { token, user: publicUser(user) };
+    this.failures.delete(rateKey);
+    return result;
   }
   async resolve(token: string): Promise<StaffActor | null> {
     if (!token || token.length > 128) return null;

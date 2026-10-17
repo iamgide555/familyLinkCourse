@@ -2,7 +2,7 @@
 
 - **Saved:** 11 October 2026, `Asia/Bangkok`. **Updated:** 17 October 2026.
 - **Purpose:** resume website-first planning using local Markdown documents.
-- **Current status:** user approved five spec-gap decisions on 17 October. Redesigned roadmap and five milestone plans now live under `docs/plans/`, awaiting plan review and execution-method selection. `docs/superpowers/` remains removed; production implementation has not started.
+- **Current status:** implementation started with TDD and Impeccable UX. **M1-T1 verified:** staff login/protected persistence, 34 API and ten browser tests. **1/18 tasks complete**; roadmap checkboxes current. `docs/superpowers/` remains removed.
 - **Source of truth:** `FamilyLink — System Design (POC).md`. This memory records discussion state; unresolved proposals below are not approved requirements.
 - **Documentation workflow:** edit local `.md` files directly. No further Claude Docs editing, syncing or export dependency. Remote artifact has not been deleted.
 
@@ -13,8 +13,8 @@
 - **Communication:** caveman mode, full intensity, remains active until user says otherwise. Keep wording terse; preserve technical accuracy. Use full explanations when compression would create ambiguity.
 - **Collaboration:** discuss consequential product choices one at a time, with recommendation and trade-off. Avoid repeatedly requesting approval for decisions already made.
 - **Markdown:** logical heading hierarchy, short bullets, bold key terms, horizontal dividers between major sections, and backticks around paths, commands, filenames, and variables.
-- **Scope:** continue implementation planning using local Markdown only. Initial planning documents drafted; no production implementation has started.
-- **Delegation:** no subagents used or requested.
+- **Scope:** implement approved POC with strict TDD; prioritize older, less tech-confident staff/member UX. Track verified work with checkboxes.
+- **Delegation:** skill-directed UX reviewer/documenter and code review used; no unsolicited external messages.
 
 ---
 
@@ -24,8 +24,8 @@
 - **Current specification:** `FamilyLink — System Design (POC).md`, revision 17 October 2026. Local Markdown is the sole maintained specification. Earlier Claude Docs copy is historical; do not resume its sync or export workflow.
 - **Archive (13 Oct):** `Project_Summary_For_GF.pdf` and `FamilyLink-Phase1-Proposal-TH.docx` also moved to `docs/archives/`. Root keeps only spec + this file.
 - **Archive:** user requested all older docs move to `docs/archives/`; seven files moved without content changes, preserving nested paths.
-- **Existing code:** static HTML/CSS/JavaScript prototype under `prototype/`; production Angular/NestJS application still needs building.
-- **Repository:** earlier `git status --short` reported that workspace was not a Git repository. Recheck before planning Git operations; do not claim commits exist.
+- **Existing code:** production Angular/NestJS workspace in `apps/`, contracts in `packages/`; `prototype/` remains reference only.
+- **Repository:** initialized `feat/staff-intake` in place; baseline `9ca408f`, staff shell `cb5a699`. No main/master branch or remote deployment created.
 - **Implementation plans:** previous roadmap and bootstrap plan discarded at the user's request; `docs/superpowers/` deleted. New plans use `docs/plans/2026-10-17-poc-roadmap.md` and five linked milestone files, created from the revised authoritative spec rather than restoring discarded drafts.
 
 ### Archived Documents
@@ -238,3 +238,18 @@
 - **New plans:** `docs/plans/2026-10-17-poc-roadmap.md`, `2026-10-17-01-staff-intake.md`, `2026-10-17-02-member-self-service.md`, `2026-10-17-03-course-booking.md`, `2026-10-17-04-staff-operations.md`, `2026-10-17-05-integration-and-launch.md`. Five usable milestones, **18 tasks**; first usable workflow staff intake, no standalone bootstrap milestone.
 - **Builder calls:** roadmap labels engineering choices explicitly, including npm workspaces, server-side sessions, run-lock transaction interface, whole-run no-close cutoff at one day before earliest non-cancelled session, and per-session export rows. These are plan proposals for review, not additional user decisions.
 - **Verification:** static plan checks cover headers, heading hierarchy, fences, task interfaces, five checkbox steps per task and absence of unresolved placeholders. No production tests/builds run because no production app exists. No Git repository, dependency install, scaffold, commit, deployment or external message created.
+
+---
+
+## 13. Implementation — Staff Shell
+
+- **User instruction:** start implementation using `superpowers:test-driven-development` and `impeccable:impeccable`; emphasize UX for older users unfamiliar with technology.
+- **Verified task:** M1-T1; `npm test` **34/34**, `npm run test:e2e -- tests/e2e/staff-login.spec.ts` **10/10**, lint/typecheck/formatting/production build pass. Real PostgreSQL synthetic organizations, no mocked business behavior.
+- **UX:** Thai-first working labels pending optional language preference; inherited mint/teal Sarabun/Kanit. Large visible controls, inline focus/errors, retained email, explicit password reveal, mobile and doubled-root-font checks. Final login review **ship**; `docs/ux/staff-login.md`.
+- **Tooling:** Node `22.22.3`, project npm `12.2.0` avoids npm 10 Angular peer resolver crash; Angular `21.2.25`, Nest `12.1.3` ESM, Prisma `7.10.1`, exact lockfile.
+- **Runtime:** synthetic temporary PostgreSQL container on `127.0.0.1:55432`; no persistent development server currently kept running. README explains explicit private keys and first-admin setup; no default production credentials.
+- **Security:** opaque hashed sessions, CSRF, 30-minute idle expiry, account revocation, tenant keys/guards, AES-GCM/HMAC, metadata-only audit. Zero runtime dependency advisories; moderate Jest development advisory remains.
+- **Next work:** M1-T2 intake/search/profile/configuration; actual paper Part 1/2 form and six service labels not found locally. Other **17 tasks remain unchecked**.
+- **Execution ledger:** `.implementation/progress.md` and `.superpowers/sdd/2026-10-17-01-staff-intake/progress.md`; preserve workspace because milestone plan remains incomplete.
+
+- **Feature-review fixes:** password reset/session creation now serialize and revalidate verified hash; encrypted envelopes require canonical encoding, 12-byte nonce and 16-byte tag. Expired logout clears stale local identity and returns with expiry feedback. All observed RED then GREEN.

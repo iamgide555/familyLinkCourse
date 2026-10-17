@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { hash } from 'argon2';
 import { randomUUID } from 'node:crypto';
+import { jest } from '@jest/globals';
 import { createTestApp, type TestApp } from './test-app.js';
 
 // Catches lost session revocation, missing authorization, CSRF and tenant checks.
@@ -183,5 +184,63 @@ describe('staff authentication against PostgreSQL', () => {
     );
     expect(responses.filter((response) => response.status === 401)).toHaveLength(5);
     expect(responses.filter((response) => response.status === 429)).toHaveLength(5);
+  });
+  it('password reset prevents an in-flight login from minting a session with the retired password', async () => {
+    const email = 'reset-race@example.test';
+    const user = await ctx.db.user.create({
+      data: {
+        organizationId: ctx.organizationId,
+        email,
+        name: 'Synthetic race',
+        role: 'staff',
+        passwordHash: await hash(password),
+      },
+    });
+    const admin = await login();
+    let release!: () => void;
+    let read!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const didRead = new Promise<void>((resolve) => {
+      read = resolve;
+    });
+    const original = ctx.db.user.findUnique.bind(ctx.db.user);
+    const lookup: {
+      findUnique(
+        args: Parameters<typeof original>[0],
+      ): Promise<Awaited<ReturnType<typeof original>>>;
+    } = ctx.db.user;
+    // Delay delivery of a real DB read; reset remains real HTTP + PostgreSQL.
+    const barrier = jest.spyOn(lookup, 'findUnique').mockImplementation(async (args) => {
+      const row = await original(args);
+      if (args.where.organizationId_email?.email === email) {
+        read();
+        await gate;
+      }
+      return row;
+    });
+    const pending = login(email).then((response) => response);
+    try {
+      await didRead;
+      const reset = await request(ctx.app.getHttpServer())
+        .patch(`/api/staff/${user.id}`)
+        .set('Cookie', admin.headers['set-cookie'])
+        .set('X-CSRF-Token', admin.body.csrfToken)
+        .send({ password: 'Replacement-password-2026' });
+      expect(reset.status).toBe(200);
+      release();
+      const result = await pending;
+      expect(result.status).toBe(401);
+      expect(
+        await ctx.db.session.count({
+          where: { organizationId: ctx.organizationId, userId: user.id },
+        }),
+      ).toBe(0);
+    } finally {
+      release();
+      await pending;
+      barrier.mockRestore();
+    }
   });
 });

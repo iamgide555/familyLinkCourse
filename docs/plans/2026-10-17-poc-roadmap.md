@@ -14,7 +14,7 @@
 
 ## Progress Checklist
 
-**Updated:** 17 October 2026. **Implementation:** 0 of 18 tasks verified complete. Check a build task only after its implementation and verification steps pass; update this summary alongside the detailed task checkboxes.
+**Updated:** 17 October 2026. **Implementation:** 1 of 18 tasks verified complete. Check a build task only after its implementation and verification steps pass; update this summary alongside the detailed task checkboxes.
 
 ### Planning
 
@@ -22,13 +22,13 @@
 - [x] **Deadline:** require all POC features ready by 31 December 2026.
 - [x] **Plans:** write roadmap and five milestone plans.
 - [x] **Document checks:** verify headings, task steps, interfaces and plan links.
-- [ ] **Execution handoff:** review plan and select native or subagent-driven execution.
+- [x] **Execution handoff:** user authorized implementation; native execution started with TDD and UX review.
 
-### M1: Staff Intake — 0 of 4
+### M1: Staff Intake — 1 of 4
 
 **Details:** [Staff intake plan](2026-10-17-01-staff-intake.md).
 
-- [ ] **M1-T1:** authenticated staff shell and protected persistence.
+- [x] **M1-T1:** authenticated staff shell and protected persistence.
 - [ ] **M1-T2:** paper intake, member search, profiles and configuration.
 - [ ] **M1-T3:** case notes with encrypted revisions.
 - [ ] **M1-T4:** printable signup form and signature receipt.
@@ -99,7 +99,7 @@
 
 ## 1. Current Workspace and Builder Calls
 
-- **Observed:** production application and Git repository do not exist; `prototype/` contains synthetic static screens. Preserve prototype files as visual references, including local Sarabun/Kanit fonts. Never copy prototype localStorage persistence into production.
+- **Planning baseline:** production application and Git repository were absent before execution; M1-T1 now establishes both. `prototype/` contains synthetic static screens. Preserve prototype files as visual references, including local Sarabun/Kanit fonts. Never copy prototype localStorage persistence into production.
 - **Plan location:** `docs/plans/`; do not restore discarded `docs/superpowers/` plans. No packages, Git repository or production files are created by writing these documents.
 - **Engineering calls:** npm workspaces at `apps/api` and `apps/web`; feature-owned modules; API contract types in `packages/contracts/src/`; Jest integration tests against actual PostgreSQL 16; Playwright for complete browser workflows. These are builder choices, not additional user requirements.
 - **Runtime versions:** at execution, check official Angular/NestJS/Prisma compatibility against installed Node, select compatible supported releases and commit exact lockfile versions. No unverified version claim is made here.
@@ -178,7 +178,7 @@
 
 ## 6. Execution and Acceptance
 
-- [ ] **Review engineering calls:** confirm roadmap and milestone scope, then choose native or subagent-driven execution.
+- [x] **Review engineering calls:** native execution started on `feat/staff-intake`; implementation progress appears above.
 - [ ] **Execute M1 first:** first result is login → create paper member → search → open profile → print; no standalone bootstrap milestone.
 - [ ] **Review each milestone:** run its named automated checks and demonstrate its complete workflow using synthetic data.
 - [ ] **Finish all milestones:** replace simulated integrations, run cross-role browser tests, and complete deployment/restore proof.

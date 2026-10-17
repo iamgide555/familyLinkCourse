@@ -20,6 +20,17 @@ describe('sensitive field protection', () => {
     expect(first.nonce).not.toBe(second.nonce);
     expect(first.ciphertext).not.toBe(second.ciphertext);
   });
+  it('rejects a truncated authentication tag rather than weakening integrity checks', () => {
+    const encrypted = crypto.encrypt('sensitive');
+    const tag = Buffer.from(encrypted.tag, 'base64').subarray(0, 4).toString('base64');
+    expect(() => crypto.decrypt({ ...encrypted, tag })).toThrow();
+  });
+  it('rejects malformed envelope encodings instead of silently ignoring invalid bytes', () => {
+    const encrypted = crypto.encrypt('sensitive');
+    for (const field of ['nonce', 'ciphertext', 'tag'] as const) {
+      expect(() => crypto.decrypt({ ...encrypted, [field]: encrypted[field] + '#' })).toThrow();
+    }
+  });
   it('scopes deterministic citizen ID lookup to organization', () => {
     expect(crypto.citizenIdIndex('org-a', '1234567890123')).toBe(
       crypto.citizenIdIndex('org-a', '1234567890123'),

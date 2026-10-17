@@ -15,7 +15,7 @@
 - **Error:** `.impeccable/review/login-error.png`; the credential alert explains retry while retaining the synthetic email and keeping the submit action available.
 - **Enlarged text:** `.impeccable/review/zoom-mobile.png`, captured at `320 × 900` with full-page output and the root font doubled from `18px` to `36px`; the form remains usable and the submit label fits on one line.
 - **Measured:** `.implementation/ux/evidence.json` records `18px` Sarabun body text and no horizontal overflow at the captured desktop or mobile width. `.implementation/ux/capture.log` records one passing capture test.
-- **Regression:** `.implementation/zoom-word-red.log` records **RED** when the Thai action word `ระบบ` split across two lines. After the horizontal-gutter fix, `.implementation/browser-green.log` records **GREEN** with all nine browser tests passing, including the word staying on one line and no horizontal scrolling at `320px` and `1280px` with a `36px` root font.
+- **Regression:** `.implementation/zoom-word-red.log` records **RED** when the Thai action word `ระบบ` split across two lines. After the horizontal-gutter fix, `.implementation/browser-green.log` records **GREEN** with all ten browser tests passing, including the word staying on one line and no horizontal scrolling at `320px` and `1280px` with a `36px` root font.
 - **Mechanical review:** `.implementation/ux/detector.json` contains an empty findings list (`[]`); the visual review also confirmed readable Thai, control sizing, error recovery and inherited identity.
 - **Limits:** the enlarged-text test doubles the root font size; it does not emulate actual browser zoom. Focus, validation, reveal and pending behavior below are also evidenced by the implementation and the browser tests.
 
@@ -28,6 +28,7 @@
 - **Keyboard focus:** the global `:focus-visible` rule uses a `3px` teal outline. Invalid submission focuses the first field needing correction; inline errors connect through `aria-describedby` and `aria-invalid`.
 - **Clear errors:** missing or malformed email and missing password receive Thai field messages. The credential failure uses a text alert and red boundary/tint; it does not disclose which credential failed. Email remains available for correction.
 - **Reveal and pending state:** the reveal button switches between explicit show/hide labels and exposes `aria-pressed`. Submission marks the form busy, disables the fieldset and changes the submit label until the request finishes.
+- **Expired logout:** a server `401` clears local identity and returns to login with expiry feedback; other failures retain retry. A real-browser regression reproduced and verified this recovery.
 - **Recovery:** a persistent section directs staff who forgot a password or lack an account to the association administrator. Separate guidance directs members and course applicants to the association's LINE menu.
 - **Mobile and motion:** at `760px` and below, the layout becomes one column with the form first; at `360px` and below, padding tightens. Fixed mobile horizontal gutters and primary-button horizontal padding capped at `24px` preserve usable content width while text sizes grow. The password-label row can wrap. Reduced-motion preferences remove animation and transition effects.
 

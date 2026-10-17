@@ -59,6 +59,21 @@ test('expired staff session returns to login with a clear explanation', async ({
   await expect(page.getByRole('alert')).toContainText('เข้าสู่ระบบอีกครั้ง');
 });
 
+test('signing out after session expiry clears stale identity and returns to login', async ({
+  page,
+  context,
+}) => {
+  await page.goto('/staff/login');
+  await page.getByLabel('อีเมล').fill('admin@familylink.test');
+  await page.getByLabel('รหัสผ่าน', { exact: true }).fill('Synthetic-password-2026');
+  await page.getByRole('button', { name: 'เข้าสู่ระบบ', exact: true }).click();
+  await expect(page).toHaveURL(/\/staff$/);
+  await context.clearCookies();
+  await page.getByRole('button', { name: 'ออกจากระบบ' }).click();
+  await expect(page).toHaveURL(/\/staff\/login/);
+  await expect(page.getByRole('alert')).toContainText('เข้าสู่ระบบอีกครั้ง');
+});
+
 test('login is accessible with large controls and no narrow-screen overflow', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 780 });
   await page.goto('/staff/login');

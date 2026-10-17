@@ -18,12 +18,19 @@ export class FieldCrypto {
   }
   decrypt(value: EncryptedValue): string {
     if (value.keyVersion !== '1') throw new Error('Unsupported encrypted value');
-    const decipher = createDecipheriv('aes-256-gcm', this.key, Buffer.from(value.nonce, 'base64'));
-    decipher.setAuthTag(Buffer.from(value.tag, 'base64'));
-    return Buffer.concat([
-      decipher.update(Buffer.from(value.ciphertext, 'base64')),
-      decipher.final(),
-    ]).toString('utf8');
+    const decode = (encoded: string): Buffer => {
+      if (typeof encoded !== 'string') throw new Error('Invalid encrypted value');
+      const decoded = Buffer.from(encoded, 'base64');
+      if (decoded.toString('base64') !== encoded) throw new Error('Invalid encrypted value');
+      return decoded;
+    };
+    const nonce = decode(value.nonce);
+    const tag = decode(value.tag);
+    const ciphertext = decode(value.ciphertext);
+    if (nonce.length !== 12 || tag.length !== 16) throw new Error('Invalid encrypted value');
+    const decipher = createDecipheriv('aes-256-gcm', this.key, nonce, { authTagLength: 16 });
+    decipher.setAuthTag(tag);
+    return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8');
   }
   citizenIdIndex(orgId: string, normalizedId: string): string {
     return createHmac('sha256', this.indexKey)

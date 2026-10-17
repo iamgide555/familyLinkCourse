@@ -22,10 +22,18 @@ export class SessionService {
     }
   }
   async logout(): Promise<void> {
-    await this.api.request('/auth/logout', 'POST');
+    let expired = false;
+    try {
+      await this.api.request('/auth/logout', 'POST');
+    } catch (error) {
+      if (!(error instanceof ApiRequestError) || error.status !== 401) throw error;
+      expired = true;
+    }
     this.user.set(null);
     this.api.csrfToken = null;
-    await this.router.navigate(['/staff/login']);
+    await this.router.navigate(['/staff/login'], {
+      queryParams: expired ? { reason: 'expired' } : {},
+    });
   }
   private accept(session: StaffSession): void {
     this.user.set(session.user);

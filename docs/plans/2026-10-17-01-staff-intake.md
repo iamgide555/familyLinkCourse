@@ -53,7 +53,7 @@
 
 **Interfaces:** consumes approved spec; produces shared contracts above, `GET /api/auth/session`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/health`, admin `/api/staff` management and member association. `SessionService.resolve(token:string):Promise<StaffActor|null>` checks expiry and active user on every request.
 
-- [ ] **Step 1 — Define failing behavior tests:** name tests `disabled_user_cannot_reuse_session`, `member_actor_cannot_manage_staff`, `ciphertext_is_authenticated`, and `scoped_foreign_keys_reject_other_org`. Include CSRF and login-rate-limit assertions. Prepare two organizations and a previously issued staff cookie; disable that user, then request session with old cookie.
+- [x] **Step 1 — Define failing behavior tests:** name tests `disabled_user_cannot_reuse_session`, `member_actor_cannot_manage_staff`, `ciphertext_is_authenticated`, and `scoped_foreign_keys_reject_other_org`. Include CSRF and login-rate-limit assertions. Prepare two organizations and a previously issued staff cookie; disable that user, then request session with old cookie.
 
 ```ts
 expect(disabledSession.status).toBe(401);
@@ -62,10 +62,10 @@ expect(() => crypto.decrypt(tamperedCiphertext)).toThrow();
 expect(crossOrganizationForeignKeyWrite).rejects.toThrow();
 ```
 
-- [ ] **Step 2 — Establish runnable RED:** initialize Git if still absent, create workspace/config/test harness and minimal Nest/Angular shells; resolve compatible versions from official documentation and pin lockfile. Establish roadmap scripts and isolated PostgreSQL test database. Run `npm run test:api -- test/auth.integration.spec.ts`; expect failed authorization assertions before adding real auth behavior.
-- [ ] **Step 3 — Implement protected shell:** create sessions table with hashed opaque tokens, expiry/revocation and organization/user references; users/organizations plus all-tenant composite keys. Implement password auth, cookie/CSRF protections, idle timeout, rate limiting, role guards, staff management and admin association of a user's own member record. Bootstrap first admin through a CLI/env secret, with no default password. Add encrypted value validation, audit field-name allow-list and sanitized errors. Serve Thai staff navigation/login and session expiry feedback.
-- [ ] **Step 4 — Verify:** run `npm run test:api -- test/auth.integration.spec.ts`, `npm run test:api -- test/crypto.integration.spec.ts`, `npm run test:e2e -- tests/e2e/staff-login.spec.ts`, `npm run typecheck`, `npm run build`; expect passing login/logout/disable/role/isolation checks and successful builds. Verify production refuses missing encryption/session secrets.
-- [ ] **Step 5 — Commit:** stage only new workspace infrastructure and auth files; commit `feat: add protected staff application shell`.
+- [x] **Step 2 — Establish runnable RED:** initialize Git if still absent, create workspace/config/test harness and minimal Nest/Angular shells; resolve compatible versions from official documentation and pin lockfile. Establish roadmap scripts and isolated PostgreSQL test database. Run `npm run test:api -- test/auth.integration.spec.ts`; expect failed authorization assertions before adding real auth behavior.
+- [x] **Step 3 — Implement protected shell:** create sessions table with hashed opaque tokens, expiry/revocation and organization/user references; users/organizations plus all-tenant composite keys. Implement password auth, cookie/CSRF protections, idle timeout, rate limiting, role guards, staff management and admin association of a user's own member record. Bootstrap first admin through a CLI/env secret, with no default password. Add encrypted value validation, audit field-name allow-list and sanitized errors. Serve Thai staff navigation/login and session expiry feedback.
+- [x] **Step 4 — Verify:** run `npm run test:api -- test/auth.integration.spec.ts`, `npm run test:api -- test/crypto.integration.spec.ts`, `npm run test:e2e -- tests/e2e/staff-login.spec.ts`, `npm run typecheck`, `npm run build`; expect passing login/logout/disable/role/isolation checks and successful builds. Verify production refuses missing encryption/session secrets.
+- [x] **Step 5 — Commit:** stage only new workspace infrastructure and auth files; commit `feat: add protected staff application shell`.
 
 ### Task 2: M1-T2 — Paper Intake, Search, Member Profiles and Configuration
 
