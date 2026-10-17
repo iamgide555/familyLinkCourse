@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>รายชื่อผู้สมัคร · FamilyLink</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .run-ticket { margin-bottom: 20px; }
+  .run-top { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: center; justify-content: space-between; padding: 20px 24px; }
+  .run-top h2 { font-size: 1.375rem; }
+  .run-meta { display: flex; flex-wrap: wrap; gap: 4px 18px; color: var(--ink-2); margin-top: 4px; font-size: 1rem; }
+  .run-meta span { display: inline-flex; align-items: center; gap: 6px; }
+  .run-meta svg { width: 18px; height: 18px; }
+  .run-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .seat-row { padding: 16px 24px 20px; display: grid; gap: 10px; }
+  .seat-row p { font-size: 1.0625rem; }
+  .seat-row p strong { font-family: var(--font-num); font-weight: 600; font-size: 1.25rem; }
+  .ticks { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tick { width: 8px; height: 24px; border-radius: 2px; background: var(--line); flex: none; }
+  .tick.t-approved { background: var(--ink); }
+  .tick.t-submitted { background: transparent; border: 1.5px dashed var(--ink-2); }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 0.9375rem; color: var(--ink-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .tick { height: 14px; width: 8px; }
+
+  .banner { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 12px 16px; border-radius: 12px; background: var(--teal-tint); border: 1.5px solid var(--teal); color: #064d41; margin-bottom: 16px; }
+  .banner[hidden] { display: none; }
+
+  .toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 14px; }
+  .search { position: relative; flex: 1 1 260px; max-width: 420px; }
+  .search svg { position: absolute; left: 14px; top: 50%; translate: 0 -50%; width: 20px; height: 20px; color: var(--ink-3); pointer-events: none; }
+  .search .input { padding-left: 44px; }
+  .toolbar .spacer { flex: 1; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .chip { min-height: 42px; padding: 4px 16px; border-radius: 999px; background: var(--sheet); border: 1.5px solid var(--line-strong); color: var(--ink); font-weight: 500; cursor: pointer; display: inline-flex; gap: 8px; align-items: center; }
+  .chip:hover { border-color: var(--ink); }
+  .chip[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); font-weight: 600; }
+  .chip .n { font-family: var(--font-num); font-weight: 500; font-size: 0.9375rem; opacity: .85; }
+
+  .walkin { padding: 18px 20px 20px; margin-bottom: 16px; }
+  .walkin[hidden] { display: none; }
+  .walkin h3 { margin-bottom: 10px; }
+  .walkin-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr auto; gap: 12px; align-items: end; }
+  .walkin .field + .field { margin-top: 0; }
+
+  .list-card { overflow: hidden; }
+  table.q { width: 100%; border-collapse: collapse; }
+  table.q caption { text-align: left; padding: 14px 20px; font-size: 0.9375rem; color: var(--ink-2); border-bottom: 2px solid var(--ink); }
+  table.q th { text-align: left; font-weight: 600; font-size: 0.9375rem; color: var(--ink-2); padding: 10px 12px; border-bottom: 1.5px solid var(--line-strong); white-space: nowrap; }
+  table.q td { padding: 14px 12px; vertical-align: middle; border-bottom: 2px dashed var(--line); }
+  table.q th:first-child, table.q td:first-child { padding-left: 20px; }
+  table.q th:last-child, table.q td:last-child { padding-right: 20px; text-align: right; }
+  .no { font-family: var(--font-num); font-weight: 600; font-size: 1.5rem; line-height: 1; min-width: 3ch; }
+  .name-btn { background: none; border: 0; padding: 4px 0; font-weight: 600; font-size: 1.0625rem; text-align: left; cursor: pointer; color: var(--ink); display: inline-flex; align-items: center; gap: 6px; min-height: 36px; }
+  .name-btn:hover { color: var(--teal); }
+  .name-btn svg { width: 18px; height: 18px; transition: transform .2s var(--ease-out); color: var(--ink-3); }
+  .name-btn[aria-expanded="true"] svg { transform: rotate(90deg); }
+  .phone { color: var(--ink-2); font-size: 1rem; }
+  tr.row.is-new td { animation: flash 2.4s var(--ease-out) both; }
+  @keyframes flash { from { background: var(--teal-tint); } to { background: transparent; } }
+  tr.detail td { background: #f1f7f5; padding: 20px 24px 24px; border-bottom: 2px dashed var(--line-strong); text-align: left; }
+  .detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px 28px; }
+  .detail-grid h4 { margin: 0 0 6px; font-family: var(--font-num); font-weight: 500; font-size: 1rem; }
+  .detail-grid dl { margin: 0; display: grid; gap: 4px; }
+  .detail-grid dt { color: var(--ink-3); font-size: 0.875rem; }
+  .detail-grid dd { margin: 0 0 6px; }
+  .detail-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; padding-top: 16px; border-top: 2px dashed var(--line-strong); align-items: center; }
+  .detail-actions .label { margin-right: 4px; }
+  .empty { padding: 40px 24px; text-align: center; display: grid; gap: 8px; justify-items: center; }
+  .empty[hidden] { display: none; }
+  .empty h3 { font-size: 1.125rem; }
+
+  @media (max-width: 1100px) { .walkin-grid { grid-template-columns: 1fr 1fr; } .walkin-grid .btnrow { grid-column: 1 / -1; } .col-prov, .col-at { display: none; } }
+  @media (max-width: 760px) {
+    .main { padding-inline: 12px; }
+    .run-top, .seat-row { padding-inline: 18px; }
+    .walkin-grid { grid-template-columns: 1fr; }
+    table.q thead { display: none; }
+    table.q, table.q tbody, table.q caption { display: block; width: 100%; }
+    table.q tr.row { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; padding: 14px 16px; border-bottom: 2px dashed var(--line); align-items: start; }
+    table.q tr.row td { display: block; border: 0; padding: 0; }
+    table.q tr.row td.c-no { grid-row: 1 / span 3; padding-top: 4px; }
+    table.q tr.row td:last-child { text-align: left; }
+    table.q tr.row td.c-act { grid-column: 2; }
+    table.q tr.row td.c-act:empty { display: none; }
+    table.q td.c-prov, table.q td.c-at { display: none !important; }
+    table.q td.c-src { color: var(--ink-2); font-size: 0.9375rem; }
+    table.q tr.detail { display: block; }
+    table.q tr.detail td { display: block; padding: 16px; }
+    .col-prov, .col-at { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="admin">
+  <aside class="rail" id="rail"></aside>
+  <main class="main" id="main">
+    <div class="page-head">
+      <div>
+        <h1>รายชื่อผู้สมัคร</h1>
+        <p>ทุกใบสมัครคือบัตรคิวหนึ่งใบ ตรวจรายชื่อ ยืนยันที่นั่ง และส่งออกเป็นไฟล์ Excel ได้จากหน้านี้</p>
+      </div>
+    </div>
+
+    <section class="ticket run-ticket" aria-labelledby="runTitle">
+      <div class="run-top">
+        <div>
+          <h2 id="runTitle"></h2>
+          <div class="run-meta" id="runMeta"></div>
+        </div>
+        <div class="run-actions">
+          <button class="btn btn-secondary" type="button" id="btnCopy"></button>
+          <a class="btn btn-secondary" id="btnOpenForm" href="register.html" target="_blank" rel="noopener"></a>
+          <button class="btn btn-quiet" type="button" id="btnToggleStatus"></button>
+        </div>
+      </div>
+      <div class="tear"></div>
+      <div class="seat-row">
+        <p id="seatLine"></p>
+        <div class="ticks" id="ticks" role="img" aria-label=""></div>
+        <div class="legend" aria-hidden="true">
+          <span><i class="tick t-approved"></i>ยืนยันแล้ว</span>
+          <span><i class="tick t-submitted"></i>รอยืนยัน</span>
+          <span><i class="tick"></i>ที่ว่าง</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="banner" id="banner" hidden role="status">
+      <span id="bannerText"></span>
+      <button class="btn btn-quiet" type="button" id="bannerClose">รับทราบ</button>
+    </div>
+
+    <div class="toolbar">
+      <div class="search">
+        <label class="sr-only" for="q">ค้นหาผู้สมัคร</label>
+        <span id="searchIcon"></span>
+        <input class="input" id="q" type="search" placeholder="ค้นหาชื่อหรือเบอร์โทร" autocomplete="off">
+      </div>
+      <span class="spacer"></span>
+      <button class="btn btn-secondary" type="button" id="btnWalkin" aria-expanded="false" aria-controls="walkin"></button>
+      <button class="btn btn-primary" type="button" id="btnExport"></button>
+    </div>
+
+    <form class="ticket walkin" id="walkin" hidden novalidate>
+      <h3>เพิ่มผู้สมัครหน้างาน</h3>
+      <div class="walkin-grid">
+        <div class="field"><label class="label" for="w-name">ชื่อ-นามสกุล<span class="req" aria-hidden="true">*</span></label>
+          <input class="input" id="w-name" autocomplete="off"><p class="error-msg" id="w-name-err"></p></div>
+        <div class="field"><label class="label" for="w-phone">เบอร์โทรศัพท์<span class="req" aria-hidden="true">*</span></label>
+          <input class="input" id="w-phone" type="tel" inputmode="tel" autocomplete="off" placeholder="081-234-5678"><p class="error-msg" id="w-phone-err"></p></div>
+        <div class="field"><label class="label" for="w-prov">จังหวัด</label>
+          <select class="select" id="w-prov"></select></div>
+        <div class="btnrow" style="display:flex;gap:8px">
+          <button class="btn btn-primary" type="submit">บันทึก</button>
+          <button class="btn btn-quiet" type="button" id="w-cancel">ยกเลิก</button>
+        </div>
+      </div>
+      <p class="help" style="margin-top:10px">ผู้สมัครหน้างานจะถูกยืนยันที่นั่งทันที และเก็บการยินยอมแบบกระดาษไว้ที่ทีมงาน</p>
+    </form>
+
+    <div class="chips" id="chips" role="group" aria-label="กรองตามสถานะ"></div>
+
+    <section class="ticket list-card">
+      <table class="q" id="table">
+        <caption id="cap"></caption>
+        <thead><tr>
+          <th scope="col">คิว</th><th scope="col">ผู้สมัคร</th><th scope="col" class="col-prov">จังหวัด</th><th scope="col">ช่องทาง</th>
+          <th scope="col">สถานะ</th><th scope="col" class="col-at">สมัครเมื่อ</th><th scope="col"><span class="sr-only">การดำเนินการ</span></th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="empty" id="empty" hidden>
+        <h3 id="emptyTitle"></h3><p class="muted" id="emptyMsg"></p>
+        <button class="btn btn-secondary" type="button" id="emptyClear">ล้างตัวกรอง</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  'use strict';
+  const { icons, esc, fmtDate, fmtDateTime, pad3, statusMeta } = FL;
+  FL.mountStrip();
+  FL.mountRail('list');
+
+  let run = FL.getRun();
+  let regs = FL.getRegs();
+  let filter = 'all', query = '';
+  const expanded = new Set();
+  const $ = id => document.getElementById(id);
+
+  $('searchIcon').innerHTML = icons.search;
+  $('btnCopy').innerHTML = icons.copy + 'คัดลอกลิงก์สมัคร';
+  $('btnOpenForm').innerHTML = icons.open + 'เปิดดูฟอร์ม';
+  $('btnWalkin').innerHTML = icons.plus + 'เพิ่มผู้สมัครหน้างาน';
+  $('btnExport').innerHTML = icons.download + 'ส่งออก Excel';
+  $('w-prov').innerHTML = '<option value="">ไม่ระบุ</option>' + FL.provinces.map(p => '<option>' + p + '</option>').join('');
+
+  function save() { FL.setRegs(regs); }
+
+  /* ---------- run summary ---------- */
+  function renderRun() {
+    const c = FL.seatCounts(regs, run);
+    $('runTitle').textContent = run.course + ' · ' + run.batch;
+    const open = run.status === 'open';
+    $('runMeta').innerHTML =
+      '<span>' + (open ? FL.pill('approved').replace('ยืนยันแล้ว', 'เปิดรับสมัคร') : '<span class="pill pill-closed">' + icons.x + 'ปิดรับสมัคร</span>') + '</span>' +
+      '<span>' + icons.cal + esc(fmtDate(run.sessions[0].date)) + (run.sessions.length > 1 ? ' – ' + esc(fmtDate(run.sessions[run.sessions.length - 1].date)) : '') + ' (' + run.sessions.length + ' วัน)</span>' +
+      '<span>' + icons.pin + esc(run.location) + '</span>';
+    $('btnToggleStatus').textContent = open ? 'ปิดรับสมัคร' : 'เปิดรับสมัครอีกครั้ง';
+    $('seatLine').innerHTML = 'ที่นั่งถูกใช้ไปแล้ว <strong>' + c.taken + '</strong> จาก <strong>' + run.capacity + '</strong> · ว่าง ' + c.free + (c.waitlist ? ' · รายชื่อสำรอง ' + c.waitlist + ' คน' : '');
+    const total = run.capacity;
+    let t = '';
+    for (let i = 0; i < total; i++) t += '<i class="tick ' + (i < c.approved ? 't-approved' : i < c.taken ? 't-submitted' : '') + '"></i>';
+    $('ticks').innerHTML = t;
+    $('ticks').setAttribute('aria-label', 'ยืนยันแล้ว ' + c.approved + ' รอยืนยัน ' + c.submitted + ' ที่ว่าง ' + c.free + ' จาก ' + total + ' ที่นั่ง');
+  }
+
+  /* ---------- chips ---------- */
+  function renderChips() {
+    const c = { all: regs.length, approved: 0, submitted: 0, waitlist: 0, cancelled: 0 };
+    regs.forEach(r => c[r.status]++);
+    const defs = [['all', 'ทั้งหมด'], ['submitted', 'รอยืนยัน'], ['approved', 'ยืนยันแล้ว'], ['waitlist', 'สำรอง'], ['cancelled', 'ยกเลิก']];
+    $('chips').innerHTML = defs.map(d => '<button type="button" class="chip" data-f="' + d[0] + '" aria-pressed="' + (filter === d[0]) + '">' + d[1] + '<span class="n">' + c[d[0]] + '</span></button>').join('');
+  }
+
+  /* ---------- rows ---------- */
+  function visible() {
+    const q = query.trim().toLowerCase().replace(/[-\s]/g, '');
+    return regs.filter(r => (filter === 'all' || r.status === filter) &&
+      (!q || r.name.toLowerCase().replace(/\s/g, '').includes(q) || FL.normPhone(r.phone).includes(q)))
+      .sort((a, b) => b.no - a.no);
+  }
+
+  function detailHtml(r) {
+    const qa = run.questions.map(q => '<dt>' + esc(q.label) + '</dt><dd>' + (r.answers && r.answers[q.id] ? esc(r.answers[q.id]) : '<span class="muted">ไม่ได้ตอบ</span>') + '</dd>').join('');
+    const act = (st, label, cls) => r.status === st ? '' : '<button type="button" class="btn ' + cls + '" data-act="' + st + '" data-id="' + r.id + '">' + label + '</button>';
+    return '<tr class="detail" id="d-' + r.id + '"><td colspan="7"><div class="detail-grid">' +
+      '<div><h4>ข้อมูลที่ผู้สมัครกรอก</h4><dl>' +
+      '<dt>เบอร์โทรศัพท์</dt><dd>' + esc(r.phone) + '</dd>' +
+      '<dt>อีเมล</dt><dd>' + (r.email ? esc(r.email) : '<span class="muted">ไม่ได้กรอก</span>') + '</dd>' +
+      '<dt>จังหวัด</dt><dd>' + esc(r.province || '—') + '</dd>' +
+      '<dt>ปีเกิด</dt><dd>' + (r.birthYear ? 'พ.ศ. ' + r.birthYear : '<span class="muted">ไม่ได้กรอก</span>') + '</dd>' +
+      '<dt>ผู้ดูแล</dt><dd>' + esc(FL.relationText[r.relation] || '—') + '</dd></dl></div>' +
+      '<div><h4>คำถามของรอบนี้</h4><dl>' + (qa || '<dd class="muted">ไม่มีคำถามเพิ่มเติม</dd>') + '</dl></div>' +
+      '<div><h4>ความยินยอมและประวัติ</h4><dl>' +
+      '<dt>ยินยอม PDPA (ข้อความ v1 ตัวอย่าง)</dt><dd>' + (r.source === 'walkin' ? 'แบบกระดาษ ที่ทีมงาน' : esc(fmtDateTime(r.consentAt))) + '</dd>' +
+      '<dt>รับข่าวสารครั้งต่อไป</dt><dd>' + (r.newsConsent ? 'ยินยอม' : 'ไม่ยินยอม') + '</dd>' +
+      '<dt>ประวัติในองค์กรนี้</dt><dd>' + (r.priorRuns ? 'เคยเข้าร่วม ' + r.priorRuns + ' รอบ (ข้อมูลตัวอย่าง)' : 'ผู้สมัครใหม่') + '</dd></dl></div>' +
+      '</div>' +
+      '<div class="detail-actions"><span class="label">เปลี่ยนสถานะ</span>' +
+      act('approved', icons.check + 'ยืนยันที่นั่ง', 'btn-primary') + act('waitlist', icons.list + 'ย้ายไปสำรอง', 'btn-secondary') +
+      act('submitted', icons.clock + 'กลับเป็นรอยืนยัน', 'btn-secondary') +
+      (r.status === 'cancelled' ? '' : act('cancelled', icons.x + 'ยกเลิก', 'btn-danger-quiet')) + '</div></td></tr>';
+  }
+
+  function renderRows() {
+    const list = visible();
+    $('cap').textContent = 'แสดง ' + list.length + ' จาก ' + regs.length + ' รายการ เรียงจากสมัครล่าสุด';
+    $('btnExport').innerHTML = icons.download + 'ส่งออก Excel <span class="num">(' + list.length + ')</span>';
+    $('rows').innerHTML = list.map(r => {
+      const open = expanded.has(r.id);
+      return '<tr class="row' + (r.isNew ? ' is-new' : '') + '" data-id="' + r.id + '">' +
+        '<td class="c-no"><span class="no">' + pad3(r.no) + '</span></td>' +
+        '<td class="c-name"><button type="button" class="name-btn" aria-expanded="' + open + '" aria-controls="d-' + r.id + '" data-id="' + r.id + '">' + icons.chevron + esc(r.name) + '</button><br><span class="phone">' + esc(r.phone) + '</span></td>' +
+        '<td class="c-prov">' + esc(r.province || '—') + '</td>' +
+        '<td class="c-src">' + FL.sourceText[r.source] + '</td>' +
+        '<td class="c-st">' + FL.pill(r.status) + '</td>' +
+        '<td class="c-at">' + esc(fmtDateTime(r.at)) + '</td>' +
+        '<td class="c-act">' + (r.status === 'submitted' ? '<button type="button" class="btn btn-quiet" data-act="approved" data-id="' + r.id + '">ยืนยันที่นั่ง</button>' : '') + '</td></tr>' +
+        (open ? detailHtml(r) : '');
+    }).join('');
+    const empty = list.length === 0;
+    $('empty').hidden = !empty;
+    $('table').hidden = empty;
+    if (empty) {
+      $('emptyTitle').textContent = query ? 'ไม่พบผู้สมัครที่ตรงกับ “' + query + '”' : 'ยังไม่มีผู้สมัครในสถานะนี้';
+      $('emptyMsg').textContent = 'ลองค้นด้วยบางส่วนของชื่อหรือเบอร์โทร หรือเลือกสถานะ “ทั้งหมด”';
+    }
+  }
+
+  function renderAll() { renderRun(); renderChips(); renderRows(); renderBanner(); }
+
+  function renderBanner() {
+    const fresh = regs.filter(r => r.isNew);
+    $('banner').hidden = fresh.length === 0;
+    if (fresh.length) $('bannerText').textContent = 'มีผู้สมัครใหม่ ' + fresh.length + ' ราย จากฟอร์มสมัครที่เพิ่งกรอก (คิว ' + fresh.map(r => pad3(r.no)).join(', ') + ')';
+  }
+
+  /* ---------- events ---------- */
+  $('chips').addEventListener('click', e => { const b = e.target.closest('.chip'); if (!b) return; filter = b.dataset.f; renderChips(); renderRows(); });
+  $('q').addEventListener('input', e => { query = e.target.value; renderRows(); });
+  $('emptyClear').addEventListener('click', () => { filter = 'all'; query = ''; $('q').value = ''; renderChips(); renderRows(); });
+  $('bannerClose').addEventListener('click', () => { regs.forEach(r => { delete r.isNew; }); save(); renderAll(); });
+
+  $('rows').addEventListener('click', e => {
+    const act = e.target.closest('[data-act]');
+    if (act) { changeStatus(act.dataset.id, act.dataset.act); return; }
+    const nb = e.target.closest('.name-btn');
+    if (nb) { const id = nb.dataset.id; if (expanded.has(id)) expanded.delete(id); else expanded.add(id); renderRows(); const again = document.querySelector('.name-btn[data-id="' + id + '"]'); if (again) again.focus(); }
+  });
+
+  function changeStatus(id, st) {
+    const r = regs.find(x => x.id === id); if (!r) return;
+    const c = FL.seatCounts(regs, run);
+    const takesSeat = s => s === 'approved' || s === 'submitted';
+    if (takesSeat(st) && !takesSeat(r.status) && c.free === 0) {
+      FL.toast('ที่นั่งเต็ม: เพิ่มจำนวนรับในหน้าเปิดรอบ หรือย้ายคนอื่นไปสำรองก่อน');
+      return;
+    }
+    r.status = st; delete r.isNew; save();
+    renderAll();
+    FL.toast('คิว ' + pad3(r.no) + ' → ' + statusMeta[st].t);
+  }
+
+  $('btnCopy').addEventListener('click', () => FL.copyText('https://' + FL.runLink(run), 'คัดลอกลิงก์สมัครแล้ว'));
+  $('btnToggleStatus').addEventListener('click', () => {
+    run.status = run.status === 'open' ? 'closed' : 'open'; FL.setRun(run); renderRun();
+    FL.toast(run.status === 'open' ? 'เปิดรับสมัครแล้ว' : 'ปิดรับสมัครแล้ว ฟอร์มสมัครจะแสดงว่าปิด');
+  });
+
+  /* walk-in */
+  const wf = $('walkin'), wBtn = $('btnWalkin');
+  function toggleWalkin(show) {
+    wf.hidden = !show; wBtn.setAttribute('aria-expanded', String(show));
+    wBtn.innerHTML = show ? icons.x + 'ปิดฟอร์มหน้างาน' : icons.plus + 'เพิ่มผู้สมัครหน้างาน';
+    if (show) { $('w-name').focus(); }
+  }
+  wBtn.addEventListener('click', () => toggleWalkin(wf.hidden));
+  $('w-cancel').addEventListener('click', () => { toggleWalkin(false); wBtn.focus(); });
+  function setErr(id, msg) { const f = $(id).closest('.field'); f.classList.toggle('invalid', !!msg); const e = $(id + '-err'); e.innerHTML = msg ? icons.alert + '<span>' + msg + '</span>' : ''; }
+  wf.addEventListener('submit', e => {
+    e.preventDefault();
+    const name = $('w-name').value.trim(), ph = FL.normPhone($('w-phone').value);
+    setErr('w-name', name.length < 2 ? 'กรุณากรอกชื่อและนามสกุล' : '');
+    const dup = regs.find(r => FL.normPhone(r.phone) === ph && r.status !== 'cancelled');
+    setErr('w-phone', !(ph.length === 10 && ph[0] === '0') ? 'กรุณากรอกเบอร์ 10 หลัก' : dup ? 'เบอร์นี้ลงทะเบียนแล้ว (คิว ' + pad3(dup.no) + ')' : '');
+    if (wf.querySelector('.invalid')) { wf.querySelector('.invalid input').focus(); return; }
+    const c = FL.seatCounts(regs, run);
+    if (c.free === 0) { FL.toast('ที่นั่งเต็ม: เพิ่มจำนวนรับหรือย้ายคนไปสำรองก่อนเพิ่มผู้สมัครหน้างาน'); return; }
+    const no = regs.reduce((m, r) => Math.max(m, r.no), 0) + 1;
+    regs.push({ id: 'reg-' + Date.now(), no: no, name: name, phone: FL.prettyPhone(ph), email: '', province: $('w-prov').value, birthYear: null, relation: '', source: 'walkin', status: 'approved', at: new Date().toISOString(), consentAt: new Date().toISOString(), newsConsent: false, priorRuns: 0, answers: {}, isNew: true });
+    save(); wf.reset(); setErr('w-name', ''); setErr('w-phone', ''); toggleWalkin(false); renderAll();
+    FL.toast('เพิ่มคิว ' + pad3(no) + ' แล้ว (ยืนยันที่นั่ง)'); wBtn.focus();
+  });
+
+  /* export: CSV with UTF-8 BOM so Excel opens Thai correctly */
+  $('btnExport').addEventListener('click', () => {
+    const list = visible().sort((a, b) => a.no - b.no);
+    if (!list.length) { FL.toast('ไม่มีรายการให้ส่งออก'); return; }
+    const head = ['คิว', 'ชื่อ-นามสกุล', 'เบอร์โทรศัพท์', 'อีเมล', 'จังหวัด', 'ปีเกิด (พ.ศ.)', 'ผู้ดูแล', 'ช่องทางสมัคร', 'สถานะ', 'วันเวลาที่สมัคร'].concat(run.questions.map(q => q.label)).concat(['ยินยอม PDPA', 'รับข่าวสาร']);
+    const cell = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const phone = p => '\t' + p; // keep leading zero in Excel
+    const lines = [head.map(cell).join(',')].concat(list.map(r => [
+      pad3(r.no), r.name, phone(r.phone), r.email, r.province, r.birthYear || '', FL.relationText[r.relation] || '', FL.sourceText[r.source], statusMeta[r.status].t, fmtDateTime(r.at)
+    ].concat(run.questions.map(q => (r.answers && r.answers[q.id]) || '')).concat([r.source === 'walkin' ? 'กระดาษ' : 'ยินยอม', r.newsConsent ? 'ยินยอม' : 'ไม่ยินยอม']).map(cell).join(',')));
+    const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'familylink-' + run.batch.replace(/\s/g, '') + '-ตัวอย่าง.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    FL.toast('ส่งออก ' + list.length + ' รายการแล้ว เปิดด้วย Excel ได้');
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>

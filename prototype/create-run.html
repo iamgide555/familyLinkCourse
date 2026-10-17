@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>เปิดรอบอบรม · FamilyLink</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .cols { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 28px; align-items: start; }
+  .stack { display: grid; gap: 20px; min-width: 0; }
+  .sheet { padding: 24px 26px 26px; }
+  .sheet > h2 { margin-bottom: 4px; }
+  .sheet > .lead { color: var(--ink-2); margin-bottom: 20px; max-width: 60ch; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .row2 .field + .field, .row3 .field + .field { margin-top: 0; }
+  .row3 { display: grid; grid-template-columns: 1.1fr .8fr .8fr; gap: 14px; }
+  .field-gap { margin-top: 20px; }
+
+  .stepper { display: inline-grid; grid-template-columns: 48px 88px 48px; align-items: stretch; width: max-content; }
+  .stepper .btn { min-height: 50px; padding: 0; border-radius: 10px 0 0 10px; }
+  .stepper .btn:last-child { border-radius: 0 10px 10px 0; }
+  .stepper .input { border-radius: 0; text-align: center; font-family: var(--font-num); font-weight: 500; font-size: 1.25rem; padding-inline: 4px; -moz-appearance: textfield; }
+  .stepper .input::-webkit-outer-spin-button, .stepper .input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+  .seg { justify-self: start; display: inline-flex; border: 1.5px solid var(--ink); border-radius: 10px; overflow: hidden; background: #fff; }
+  .seg label { position: relative; cursor: pointer; }
+  .seg input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+  .seg span { display: grid; place-items: center; min-height: 46px; padding: 0 20px; font-weight: 600; }
+  .seg label + label span { border-left: 1.5px solid var(--ink); }
+  .seg input:checked + span { background: var(--ink); color: #fff; }
+  .seg input:focus-visible + span { outline: 3px solid var(--teal); outline-offset: -3px; }
+
+  .session { display: grid; grid-template-columns: 76px 1fr; gap: 14px; padding: 16px 0; border-top: 2px dashed var(--line-strong); align-items: start; }
+  .session:first-of-type { border-top: 0; padding-top: 4px; }
+  .day-no { font-family: var(--font-num); font-weight: 600; line-height: 1; padding-top: 28px; }
+  .day-no b { display: block; font-size: 2rem; }
+  .day-no span { font-size: 0.875rem; color: var(--ink-2); font-family: var(--font-body); font-weight: 500; }
+  .session-top { display: flex; justify-content: flex-end; margin-bottom: -6px; min-height: 0; }
+  .add-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 8px; padding-top: 16px; border-top: 2px dashed var(--line-strong); }
+
+  .rules { display: grid; gap: 22px; margin-top: 24px; padding-top: 22px; border-top: 2px dashed var(--line-strong); }
+
+  .qlist { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+  .qrow { padding: 14px 0; border-top: 2px dashed var(--line); display: grid; gap: 10px; }
+  .qrow.base { grid-template-columns: 24px 1fr auto; align-items: center; gap: 12px; }
+  .qrow.base svg { width: 20px; height: 20px; color: var(--ink-3); }
+  .qrow.base .opt-t { font-size: 0.875rem; color: var(--ink-3); }
+  .qrow.custom { grid-template-columns: 1fr; }
+  .qgrid { display: grid; grid-template-columns: 1fr 190px; gap: 12px; align-items: end; }
+  .qgrid .field + .field { margin-top: 0; }
+  .qtools { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; justify-content: space-between; }
+  .qtools .btns { display: flex; gap: 2px; }
+  .icon-btn { width: 44px; height: 44px; display: inline-grid; place-items: center; border-radius: 10px; border: 0; background: transparent; color: var(--ink-2); cursor: pointer; }
+  .icon-btn:hover { background: var(--ground); color: var(--ink); }
+  .icon-btn.danger:hover { background: var(--red-tint); color: var(--red); }
+  .icon-btn[disabled] { opacity: .35; cursor: not-allowed; background: transparent; }
+  .icon-btn svg { width: 22px; height: 22px; }
+  .sub-h { font-family: var(--font-num); font-weight: 500; font-size: 1.0625rem; margin: 22px 0 4px; }
+  .sub-h:first-of-type { margin-top: 0; }
+
+  /* preview */
+  .preview { position: sticky; top: 20px; display: grid; gap: 16px; }
+  .pv-top { padding: 20px 22px 18px; display: grid; gap: 10px; }
+  .pv-top h2 { font-size: 1.25rem; }
+  .pv-top .meta { color: var(--ink-2); font-size: 1rem; line-height: 1.55; }
+  .pv-link { padding: 18px 22px 22px; display: grid; gap: 14px; }
+  .link-box { display: flex; align-items: center; gap: 8px; background: var(--ground); border-radius: 10px; padding: 8px 8px 8px 14px; min-height: 48px; }
+  .link-box span { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 0.9375rem; line-height: 1.4; }
+  .pv-qr { display: grid; justify-items: center; gap: 4px; }
+  .pv-qr svg { width: 148px; height: 148px; border: 1.5px solid var(--line); border-radius: 8px; transition: opacity .2s; }
+  .pv-qr.is-draft svg { opacity: .28; }
+  .pv-actions { display: grid; gap: 10px; }
+
+  .publish-bar { position: sticky; bottom: 0; z-index: 5; margin: 24px -12px 0; padding: 14px 12px 16px; background: var(--ground); border-top: 2px dashed var(--line-strong); display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+  .publish-bar .status-t { flex: 1 1 220px; color: var(--ink-2); font-size: 1rem; line-height: 1.5; }
+  .done-banner { padding: 18px 22px; background: var(--teal-tint); border: 1.5px solid var(--teal); border-radius: 14px; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; color: #064d41; }
+  .done-banner[hidden] { display: none; }
+  .done-banner .acts { display: flex; flex-wrap: wrap; gap: 8px; }
+  .summary-err { padding: 14px 18px; border: 1.5px solid var(--red); background: var(--red-tint); border-radius: 12px; color: #7d1a14; font-weight: 600; display: flex; gap: 10px; }
+  .summary-err[hidden] { display: none; }
+  .summary-err svg { width: 22px; height: 22px; flex: none; margin-top: 3px; }
+
+  @media (max-width: 1180px) { .cols { grid-template-columns: 1fr; } .preview { position: static; } }
+  @media (max-width: 640px) {
+    .main { padding-inline: 12px; }
+    .sheet { padding: 20px 18px 22px; }
+    .row2, .row3, .qgrid { grid-template-columns: 1fr; }
+    .session { grid-template-columns: 1fr; gap: 6px; }
+    .day-no { padding-top: 0; display: flex; align-items: baseline; gap: 8px; }
+    .day-no b { font-size: 1.5rem; }
+    .qrow.base { grid-template-columns: 24px 1fr; }
+    .qrow.base .opt-t { grid-column: 2; }
+  }
+</style>
+</head>
+<body>
+<div class="admin">
+  <aside class="rail" id="rail"></aside>
+  <main class="main">
+    <div class="page-head">
+      <div>
+        <h1 id="pageTitle">เปิดรอบอบรม</h1>
+        <p>ตั้งค่ารอบอบรม วันอบรม และคำถามในฟอร์ม แล้วส่งลิงก์ให้ผู้สมัครได้ทันที ไม่ต้องสร้างฟอร์มและไฟล์ใหม่ทุกครั้ง</p>
+      </div>
+      <button class="btn btn-secondary" type="button" id="btnNew">เริ่มรอบใหม่แบบว่าง</button>
+    </div>
+
+    <div class="done-banner" id="doneBanner" hidden role="status">
+      <strong>เปิดรับสมัครแล้ว ลิงก์พร้อมส่งให้ผู้สมัคร</strong>
+      <div class="acts">
+        <a class="btn btn-primary" href="register.html" target="_blank" rel="noopener" id="goForm"></a>
+        <a class="btn btn-secondary" href="registrations.html" id="goList"></a>
+      </div>
+    </div>
+
+    <div class="cols" style="margin-top:20px">
+      <form class="stack" id="form" novalidate>
+        <div class="summary-err" id="sumErr" hidden role="alert"></div>
+
+        <section class="ticket sheet" aria-labelledby="s1">
+          <h2 id="s1">รอบอบรม</h2>
+          <p class="lead">เลือกหลักสูตรที่มีอยู่ แล้วตั้งชื่อรอบ สถานที่ และจำนวนที่รับ</p>
+          <div class="field">
+            <label class="label" for="course">หลักสูตร</label>
+            <select class="select" id="course" data-bind="course"></select>
+          </div>
+          <div class="row2 field-gap">
+            <div class="field" id="fl-batch"><label class="label" for="batch">ชื่อรอบ<span class="req" aria-hidden="true">*</span></label>
+              <input class="input" id="batch" data-bind="batch" autocomplete="off" aria-describedby="batch-err">
+              <p class="error-msg" id="batch-err"></p></div>
+            <div class="field" id="fl-cap"><label class="label" for="cap">จำนวนที่รับ (ที่นั่ง)<span class="req" aria-hidden="true">*</span></label>
+              <div class="stepper">
+                <button class="btn btn-secondary" type="button" id="capMinus" aria-label="ลดจำนวนที่นั่ง"></button>
+                <input class="input" id="cap" type="number" inputmode="numeric" min="1" max="999" aria-describedby="cap-err cap-help">
+                <button class="btn btn-secondary" type="button" id="capPlus" aria-label="เพิ่มจำนวนที่นั่ง"></button>
+              </div>
+              <p class="help" id="cap-help"></p><p class="error-msg" id="cap-err"></p></div>
+          </div>
+          <div class="field field-gap" id="fl-loc"><label class="label" for="location">สถานที่อบรม<span class="req" aria-hidden="true">*</span></label>
+            <input class="input" id="location" data-bind="location" autocomplete="off" aria-describedby="location-err">
+            <p class="error-msg" id="location-err"></p></div>
+        </section>
+
+        <section class="ticket sheet" aria-labelledby="s2">
+          <h2 id="s2">วันอบรม</h2>
+          <p class="lead">บางหลักสูตรมี 1 วัน บางหลักสูตรมี 3 วัน ผู้สมัครลงทะเบียนครั้งเดียวทั้งรอบ ระบบเก็บเช็คชื่อรายวันได้ในระยะถัดไป</p>
+          <div class="field">
+            <div class="label" id="days-label">จำนวนวันอบรม</div>
+            <div class="seg" role="radiogroup" aria-labelledby="days-label" id="daysSeg">
+              <label><input type="radio" name="days" value="1"><span>1 วัน</span></label>
+              <label><input type="radio" name="days" value="2"><span>2 วัน</span></label>
+              <label><input type="radio" name="days" value="3"><span>3 วัน</span></label>
+            </div>
+          </div>
+          <div id="sessions" style="margin-top:20px"></div>
+          <div class="add-row"><button class="btn btn-quiet" type="button" id="addSession"></button><span class="help">ต้องการมากกว่า 3 วัน เพิ่มวันได้เอง</span></div>
+        </section>
+
+        <section class="ticket sheet" aria-labelledby="s3">
+          <h2 id="s3">การรับสมัคร</h2>
+          <p class="lead">กำหนดช่วงเวลา และกติกาที่ทีมงานอยากใช้ หัวข้อที่ติดป้าย “รอยืนยัน” เป็นข้อที่ต้องถาม FamilyLink</p>
+          <div class="row2">
+            <div class="field" id="fl-opens"><label class="label" for="opens">เปิดรับสมัคร</label><input class="input" type="date" id="opens" data-bind="opens"></div>
+            <div class="field" id="fl-closes"><label class="label" for="closes">ปิดรับสมัคร</label><input class="input" type="date" id="closes" data-bind="closes" aria-describedby="closes-err"><p class="error-msg" id="closes-err"></p></div>
+          </div>
+          <div class="rules">
+            <label class="switch"><input type="checkbox" role="switch" data-bind="requireApproval"><span class="switch-text"><span class="label">ทีมงานต้องอนุมัติก่อนยืนยันที่นั่ง <span class="tag-open">รอยืนยัน</span></span><span class="help">ปิด = ผู้สมัครได้ที่นั่งทันที เปิด = ใบสมัครอยู่สถานะ “รอยืนยัน” จนกว่าทีมงานกดยืนยัน</span></span></label>
+            <label class="switch"><input type="checkbox" role="switch" data-bind="waitlist"><span class="switch-text"><span class="label">เปิดรายชื่อสำรองเมื่อที่นั่งเต็ม <span class="tag-open">รอยืนยัน</span></span><span class="help">ปิด = เมื่อเต็ม ฟอร์มจะแจ้งว่าที่นั่งเต็มและไม่รับเพิ่ม</span></span></label>
+          </div>
+        </section>
+
+        <section class="ticket sheet" aria-labelledby="s4">
+          <h2 id="s4">คำถามในฟอร์มสมัคร</h2>
+          <p class="lead">ข้อมูลหลักเหมือนกันทุกรอบ เพื่อให้ค้นหาและรายงานได้ ส่วนคำถามเพิ่มเติมตั้งเองได้ตามแต่ละรอบ</p>
+          <h3 class="sub-h">ข้อมูลหลัก (ล็อกไว้)</h3>
+          <ul class="qlist" id="baseQ"></ul>
+          <h3 class="sub-h" style="margin-top:28px">คำถามเพิ่มเติมของรอบนี้</h3>
+          <ul class="qlist" id="customQ"></ul>
+          <div class="add-row"><button class="btn btn-secondary" type="button" id="addQ"></button></div>
+        </section>
+
+        <div class="publish-bar">
+          <p class="status-t" id="pubNote"></p>
+          <button class="btn btn-primary btn-lg" type="submit" id="btnPublish"></button>
+        </div>
+      </form>
+
+      <aside class="preview" aria-label="ตัวอย่างลิงก์สมัคร">
+        <section class="ticket">
+          <div class="pv-top">
+            <span id="pvStatus"></span>
+            <h2 id="pvTitle"></h2>
+            <p class="meta" id="pvMeta"></p>
+          </div>
+          <div class="tear"></div>
+          <div class="pv-link">
+            <div class="link-box"><span id="pvLink"></span><button class="btn btn-quiet" type="button" id="pvCopy"></button></div>
+            <div class="pv-qr" id="pvQr"></div>
+            <p class="help" style="text-align:center">คิวอาร์โค้ดตัวอย่าง ใช้สแกนไม่ได้</p>
+            <div class="pv-actions">
+              <button class="btn btn-primary" type="button" id="pvLine"></button>
+              <a class="btn btn-secondary" id="pvOpen" href="register.html" target="_blank" rel="noopener"></a>
+            </div>
+            <p class="help" id="pvNote"></p>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  'use strict';
+  const { icons, esc, fmtDate } = FL;
+  FL.mountStrip();
+  FL.mountRail('create');
+  const $ = id => document.getElementById(id);
+
+  let draft = JSON.parse(JSON.stringify(FL.getRun()));
+  let freshRun = false;
+  let dirty = false;
+  const regsNow = () => FL.getRegs();
+
+  /* ---------- static icon slots ---------- */
+  $('capMinus').innerHTML = icons.minus; $('capPlus').innerHTML = icons.plus;
+  $('addSession').innerHTML = icons.plus + 'เพิ่มวันอบรม';
+  $('addQ').innerHTML = icons.plus + 'เพิ่มคำถาม';
+  $('goForm').innerHTML = icons.open + 'เปิดดูฟอร์มสมัคร';
+  $('goList').innerHTML = icons.users + 'ไปที่รายชื่อผู้สมัคร';
+  $('pvCopy').innerHTML = icons.copy + 'คัดลอก';
+  $('pvLine').innerHTML = icons.chat + 'ส่งต่อผ่าน LINE';
+  $('pvOpen').innerHTML = icons.open + 'เปิดดูฟอร์ม';
+  $('course').innerHTML = FL.courses.map(c => '<option>' + c + '</option>').join('');
+
+  /* ---------- simple bindings ---------- */
+  document.querySelectorAll('[data-bind]').forEach(el => {
+    const k = el.dataset.bind;
+    if (el.type === 'checkbox') el.checked = !!draft[k]; else el.value = draft[k] || '';
+    el.addEventListener('input', () => { draft[k] = el.type === 'checkbox' ? el.checked : el.value; touch(); clearErr(el); renderPreview(); });
+  });
+  function clearErr(el) { const f = el.closest('.field'); if (f) f.classList.remove('invalid'); }
+
+  const cap = $('cap');
+  function setCap(n) { n = Math.max(1, Math.min(999, Number(n) || 1)); draft.capacity = n; cap.value = n; touch(); capHelp(); renderPreview(); }
+  cap.value = draft.capacity;
+  cap.addEventListener('input', () => { draft.capacity = Number(cap.value) || 0; clearErr(cap); touch(); capHelp(); renderPreview(); });
+  $('capMinus').onclick = () => setCap(draft.capacity - 1);
+  $('capPlus').onclick = () => setCap(draft.capacity + 1);
+  function capHelp() {
+    const c = freshRun ? { taken: 0 } : FL.seatCounts(regsNow(), draft);
+    $('cap-help').textContent = c.taken > 0 ? 'ตอนนี้มีผู้สมัครใช้ที่นั่งแล้ว ' + c.taken + ' ที่นั่ง' : 'ยังไม่มีผู้สมัครในรอบนี้';
+  }
+
+  /* ---------- sessions ---------- */
+  const addDays = (s, n) => { const d = FL.parseDay(s); d.setDate(d.getDate() + n); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+  function syncSeg() { const n = draft.sessions.length; document.querySelectorAll('#daysSeg input').forEach(i => { i.checked = Number(i.value) === n; }); }
+  function renderSessions() {
+    $('sessions').innerHTML = draft.sessions.map((s, i) =>
+      '<div class="session" data-i="' + i + '" id="fl-s' + i + '"><div class="day-no"><span>วันที่</span><b>' + (i + 1) + '</b></div><div>' +
+      '<div class="row3"><div class="field"><label class="label" for="sd' + i + '">วันที่จัดอบรม</label><input class="input" type="date" id="sd' + i + '" data-k="date" value="' + esc(s.date) + '"></div>' +
+      '<div class="field"><label class="label" for="ss' + i + '">เริ่ม</label><input class="input" type="time" id="ss' + i + '" data-k="start" value="' + esc(s.start) + '"></div>' +
+      '<div class="field"><label class="label" for="se' + i + '">สิ้นสุด</label><input class="input" type="time" id="se' + i + '" data-k="end" value="' + esc(s.end) + '"></div></div>' +
+      '<div class="field" style="margin-top:14px"><label class="label" for="sp' + i + '">สถานที่ของวันนี้<span class="opt">ไม่บังคับ ใช้เมื่อต่างจากสถานที่หลัก</span></label><input class="input" id="sp' + i + '" data-k="place" value="' + esc(s.place) + '"></div>' +
+      '<p class="error-msg" id="sd' + i + '-err"></p>' +
+      (draft.sessions.length > 1 ? '<div style="margin-top:6px"><button type="button" class="btn btn-danger-quiet" data-del="' + i + '">' + icons.trash + 'ลบวันที่ ' + (i + 1) + '</button></div>' : '') +
+      '</div></div>').join('');
+    syncSeg();
+  }
+  $('sessions').addEventListener('input', e => {
+    const row = e.target.closest('.session'); if (!row || !e.target.dataset.k) return;
+    draft.sessions[Number(row.dataset.i)][e.target.dataset.k] = e.target.value; touch(); renderPreview();
+    const er = $('sd' + row.dataset.i + '-err'); if (er) er.innerHTML = '';
+  });
+  $('sessions').addEventListener('click', e => {
+    const b = e.target.closest('[data-del]'); if (!b) return;
+    draft.sessions.splice(Number(b.dataset.del), 1); touch(); renderSessions(); renderPreview(); $('addSession').focus();
+  });
+  function addSession() {
+    const last = draft.sessions[draft.sessions.length - 1];
+    draft.sessions.push({ date: last && last.date ? addDays(last.date, 1) : '', start: last ? last.start : '09:00', end: last ? last.end : '16:00', place: '' });
+  }
+  $('addSession').onclick = () => { addSession(); touch(); renderSessions(); renderPreview(); const el = $('sd' + (draft.sessions.length - 1)); el && el.focus(); };
+  $('daysSeg').addEventListener('change', e => {
+    const n = Number(e.target.value);
+    while (draft.sessions.length < n) addSession();
+    draft.sessions = draft.sessions.slice(0, n);
+    touch(); renderSessions(); renderPreview();
+    const chosen = document.querySelector('#daysSeg input:checked'); if (chosen) chosen.focus();
+  });
+
+  /* ---------- questions ---------- */
+  const baseFields = [
+    ['ชื่อ-นามสกุล', 'บังคับ'], ['เบอร์โทรศัพท์', 'บังคับ ใช้ตรวจสอบผู้สมัครซ้ำ'], ['จังหวัด', 'บังคับ'], ['ท่านดูแลใครอยู่', 'บังคับ'], ['ปีเกิด', 'ไม่บังคับ'], ['ความยินยอม PDPA', 'บังคับ']
+  ];
+  function renderBase() {
+    $('baseQ').innerHTML = baseFields.map(f => '<li class="qrow base">' + icons.lock + '<span>' + f[0] + '</span><span class="opt-t">' + f[1] + '</span></li>').join('') +
+      '<li class="qrow base"><span></span><label class="switch" style="grid-column:2 / -1"><input type="checkbox" role="switch" id="emailSw"' + (draft.emailField ? ' checked' : '') + '><span class="switch-text"><span class="label">ถามอีเมล (ไม่บังคับ)</span><span class="help">ปิดถ้าไม่จำเป็น เพื่อเก็บข้อมูลเท่าที่ต้องใช้</span></span></label></li>';
+    $('emailSw').onchange = e => { draft.emailField = e.target.checked; touch(); };
+  }
+  const needsOptions = t => t === 'radio' || t === 'checkbox' || t === 'dropdown';
+  function renderQ(focusSel) {
+    const list = draft.questions;
+    $('customQ').innerHTML = list.length ? list.map((q, i) =>
+      '<li class="qrow custom" data-i="' + i + '" id="fl-q' + i + '"><div class="qgrid">' +
+      '<div class="field"><label class="label" for="ql' + i + '">คำถาม</label><input class="input" id="ql' + i + '" data-k="label" value="' + esc(q.label) + '" aria-describedby="ql' + i + '-err"><p class="error-msg" id="ql' + i + '-err"></p></div>' +
+      '<div class="field"><label class="label" for="qt' + i + '">รูปแบบคำตอบ</label><select class="select" id="qt' + i + '" data-k="type">' + FL.questionTypes.map(t => '<option value="' + t.v + '"' + (t.v === q.type ? ' selected' : '') + '>' + t.t + '</option>').join('') + '</select></div></div>' +
+      (needsOptions(q.type) ? '<div class="field"><label class="label" for="qo' + i + '">ตัวเลือก<span class="opt">คั่นแต่ละข้อด้วยเครื่องหมาย ,</span></label><input class="input" id="qo' + i + '" data-k="options" value="' + esc((q.options || []).join(', ')) + '" aria-describedby="qo' + i + '-err"><p class="error-msg" id="qo' + i + '-err"></p></div>' : '') +
+      '<div class="qtools"><label class="switch"><input type="checkbox" role="switch" data-k="required"' + (q.required ? ' checked' : '') + '><span class="switch-text"><span class="label">บังคับตอบ</span></span></label>' +
+      '<div class="btns"><button type="button" class="icon-btn" data-mv="-1" aria-label="เลื่อนขึ้น"' + (i === 0 ? ' disabled' : '') + '>' + icons.up + '</button>' +
+      '<button type="button" class="icon-btn" data-mv="1" aria-label="เลื่อนลง"' + (i === list.length - 1 ? ' disabled' : '') + '>' + icons.down + '</button>' +
+      '<button type="button" class="icon-btn danger" data-rm="1" aria-label="ลบคำถามนี้">' + icons.trash + '</button></div></div></li>').join('')
+      : '<li class="qrow"><p class="muted">ยังไม่มีคำถามเพิ่มเติม ฟอร์มจะมีเฉพาะข้อมูลหลัก</p></li>';
+    if (focusSel) { const el = document.querySelector(focusSel); if (el) el.focus(); }
+  }
+  $('customQ').addEventListener('input', e => {
+    const row = e.target.closest('.custom'); if (!row || !e.target.dataset.k) return;
+    const q = draft.questions[Number(row.dataset.i)], k = e.target.dataset.k;
+    if (k === 'type') return;
+    if (k === 'required') q.required = e.target.checked;
+    else if (k === 'options') q.options = e.target.value.split(/[,،，]/).map(s => s.trim()).filter(Boolean);
+    else q[k] = e.target.value;
+    clearErr(e.target); touch();
+  });
+  $('customQ').addEventListener('change', e => {
+    const row = e.target.closest('.custom'); if (!row || e.target.dataset.k !== 'type') return;
+    const i = Number(row.dataset.i); draft.questions[i].type = e.target.value; touch(); renderQ('#qt' + i);
+  });
+  $('customQ').addEventListener('click', e => {
+    const row = e.target.closest('.custom'); if (!row) return;
+    const i = Number(row.dataset.i), mv = e.target.closest('[data-mv]'), rm = e.target.closest('[data-rm]');
+    if (mv) { const j = i + Number(mv.dataset.mv); const t = draft.questions[i]; draft.questions[i] = draft.questions[j]; draft.questions[j] = t; touch(); renderQ('#fl-q' + j + ' [data-mv="' + mv.dataset.mv + '"]:not([disabled])'); }
+    if (rm) { draft.questions.splice(i, 1); touch(); renderQ('#addQ'); if (!draft.questions.length) $('addQ').focus(); }
+  });
+  $('addQ').onclick = () => {
+    draft.questions.push({ id: 'q' + Date.now(), label: '', type: 'short', options: [], required: false });
+    touch(); renderQ('#ql' + (draft.questions.length - 1));
+  };
+
+  /* ---------- preview ---------- */
+  function renderPreview() {
+    const live = draft.published;
+    $('pvStatus').innerHTML = live ? '<span class="pill pill-open">' + icons.check + 'เปิดรับสมัครแล้ว</span>' : '<span class="pill pill-submitted">' + icons.clock + 'ร่าง ยังไม่เปิด</span>';
+    $('pvTitle').textContent = (draft.course || 'หลักสูตร') + ' · ' + (draft.batch || 'ยังไม่ตั้งชื่อรอบ');
+    const ss = draft.sessions.filter(s => s.date);
+    const range = ss.length ? fmtDate(ss[0].date) + (ss.length > 1 ? ' – ' + fmtDate(ss[ss.length - 1].date) : '') : 'ยังไม่ระบุวัน';
+    $('pvMeta').textContent = draft.sessions.length + ' วันอบรม · ' + range + ' · รับ ' + (draft.capacity || 0) + ' ที่นั่ง';
+    $('pvLink').textContent = 'https://' + FL.runLink(draft);
+    $('pvQr').className = 'pv-qr' + (live ? '' : ' is-draft');
+    $('pvQr').innerHTML = FL.qrSvg(draft.slug, 148);
+    ['pvCopy', 'pvLine'].forEach(id => { $(id).disabled = !live; });
+    const open = $('pvOpen'); open.setAttribute('aria-disabled', String(!live)); open.classList.toggle('btn-secondary', live); open.style.pointerEvents = live ? '' : 'none'; open.style.opacity = live ? '' : '.5';
+    $('pvNote').textContent = live ? 'ส่งลิงก์นี้ทาง LINE Official Account หรือให้ทีมงานส่งเอง ใช้ได้โดยไม่ต้องมี LINE' : 'กด “เปิดรับสมัคร” ก่อน ลิงก์จึงจะใช้งานได้';
+    $('pageTitle').textContent = live ? 'แก้ไขรอบอบรม' : 'เปิดรอบอบรม';
+    $('btnPublish').innerHTML = (live ? icons.check + 'บันทึกการแก้ไข' : icons.link + 'เปิดรับสมัคร');
+    $('pubNote').textContent = live ? (dirty ? 'มีการแก้ไขที่ยังไม่บันทึก' : 'บันทึกล่าสุดแล้ว ลิงก์ใช้งานได้') : 'ฟอร์มสมัครจะแสดงตามที่ตั้งค่าไว้ด้านบน';
+  }
+  function touch() { dirty = true; const l = draft.published; if (l) $('pubNote').textContent = 'มีการแก้ไขที่ยังไม่บันทึก'; }
+  $('pvCopy').onclick = () => FL.copyText('https://' + FL.runLink(draft), 'คัดลอกลิงก์สมัครแล้ว');
+  $('pvLine').onclick = () => FL.toast('ตัวอย่าง: ตอนใช้งานจริงจะเปิดหน้าส่งข้อความใน LINE');
+
+  /* ---------- validate + publish ---------- */
+  function err(id, msg) { const f = $(id).closest('.field'); if (f) f.classList.toggle('invalid', !!msg); const e = $(id + '-err'); if (e) e.innerHTML = msg ? icons.alert + '<span>' + msg + '</span>' : ''; return !!msg; }
+  function validate() {
+    const bad = [];
+    const push = (cond, id, msg) => { if (err(id, cond ? msg : '')) bad.push(id); };
+    push(!draft.batch.trim(), 'batch', 'กรุณาตั้งชื่อรอบ เช่น รุ่นที่ 13');
+    push(!draft.location.trim(), 'location', 'กรุณาระบุสถานที่อบรม');
+    push(!(draft.capacity >= 1), 'cap', 'กรุณาระบุจำนวนที่นั่งอย่างน้อย 1');
+    draft.sessions.forEach((s, i) => push(!s.date, 'sd' + i, 'กรุณาเลือกวันที่จัดอบรม'));
+    push(draft.opens && draft.closes && draft.closes < draft.opens, 'closes', 'วันปิดรับสมัครต้องไม่ก่อนวันเปิดรับสมัคร');
+    draft.questions.forEach((q, i) => {
+      push(!q.label.trim(), 'ql' + i, 'กรุณาพิมพ์คำถาม');
+      if (needsOptions(q.type)) push((q.options || []).length < 2, 'qo' + i, 'ใส่ตัวเลือกอย่างน้อย 2 ข้อ คั่นด้วย ,');
+    });
+    return bad;
+  }
+  $('form').addEventListener('submit', e => {
+    e.preventDefault();
+    const bad = validate();
+    const box = $('sumErr');
+    if (bad.length) {
+      box.hidden = false; box.innerHTML = icons.alert + '<span>ยังมี ' + bad.length + ' ช่องที่ต้องแก้ก่อนเปิดรับสมัคร</span>';
+      const first = document.getElementById(bad[0]); if (first) { first.focus(); first.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }
+      return;
+    }
+    box.hidden = true;
+    const wasLive = draft.published;
+    draft.published = true; draft.status = 'open';
+    FL.setRun(draft);
+    if (freshRun) { FL.setRegs([]); freshRun = false; }
+    dirty = false; renderPreview(); capHelp();
+    $('doneBanner').hidden = false;
+    $('goForm').focus({ preventScroll: true });
+    window.scrollTo({ top: 0 });
+    FL.toast(wasLive ? 'บันทึกการแก้ไขแล้ว' : 'เปิดรับสมัครแล้ว ลิงก์พร้อมใช้งาน');
+  });
+
+  /* ---------- start a blank new run ---------- */
+  $('btnNew').onclick = () => {
+    const d = FL.defaultRun();
+    draft = { id: 'run-' + Date.now(), slug: 'r13-' + Math.random().toString(36).slice(2, 6), course: FL.courses[0], batch: 'รุ่นที่ 13', location: '', capacity: 30,
+      opens: '2026-10-05', closes: '2026-11-20', requireApproval: true, waitlist: true, emailField: true, status: 'open', published: false,
+      sessions: [{ date: '', start: '09:00', end: '16:00', place: '' }], questions: [] };
+    freshRun = true; dirty = false;
+    document.querySelectorAll('[data-bind]').forEach(el => { const k = el.dataset.bind; if (el.type === 'checkbox') el.checked = !!draft[k]; else el.value = draft[k] || ''; });
+    cap.value = draft.capacity;
+    $('doneBanner').hidden = true; $('sumErr').hidden = true;
+    document.querySelectorAll('.field.invalid').forEach(f => f.classList.remove('invalid'));
+    renderSessions(); renderBase(); renderQ(); capHelp(); renderPreview();
+    FL.toast('เริ่มรอบใหม่ เมื่อเปิดรับสมัคร รายชื่อตัวอย่างเดิมจะถูกล้าง');
+    $('batch').focus();
+  };
+
+  renderSessions(); renderBase(); renderQ(); capHelp(); renderPreview();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ต้นแบบระบบลงทะเบียนอบรม · FamilyLink</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .hub { width: min(100%, 1120px); margin: 0 auto; padding: 28px 20px 80px; }
+  .hub-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 28px; }
+  .hub-head .small { color: var(--ink-2); }
+  .grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+  .intro { padding: 28px 28px 24px; }
+  .intro h1 { margin-bottom: 8px; }
+  .intro p { color: var(--ink-2); max-width: 56ch; }
+  .steps { list-style: none; margin: 0; padding: 0; }
+  .step a {
+    display: grid; grid-template-columns: 64px 1fr auto; gap: 8px 18px; align-items: center; padding: 22px 28px; text-decoration: none; color: var(--ink);
+    transition: background-color .15s;
+  }
+  .step a:hover { background: var(--teal-tint); color: var(--ink); }
+  .step .qn { font-family: var(--font-num); font-weight: 600; font-size: 3rem; line-height: 1; color: var(--ink); }
+  .step h2 { font-size: 1.3rem; }
+  .step p { color: var(--ink-2); font-size: 1rem; line-height: 1.55; margin-top: 2px; }
+  .step .go { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: var(--teal); white-space: nowrap; }
+  .step .go svg { width: 20px; height: 20px; }
+  .step + .step { border-top: 2px dashed var(--line-strong); }
+  .step-tear { position: relative; border-top: 2px dashed var(--line-strong); }
+  .step-tear::before, .step-tear::after { content: ''; position: absolute; top: -11px; width: 20px; height: 20px; border-radius: 50%; background: var(--ground); box-shadow: inset 0 2px 3px rgba(20,32,29,.12); }
+  .step-tear::before { left: -10px; } .step-tear::after { right: -10px; }
+  .who { display: inline-block; margin-top: 6px; font-size: 0.8125rem; font-weight: 600; color: var(--ink-2); border: 1.5px solid var(--line-strong); border-radius: 999px; padding: 0 10px; line-height: 1.7; }
+  .start { padding: 0 28px 26px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+
+  .agenda { padding: 26px 26px 22px; }
+  .agenda h2 { margin-bottom: 4px; }
+  .agenda > p { color: var(--ink-2); font-size: 1rem; margin-bottom: 14px; }
+  .qs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .qs .choice { align-items: flex-start; }
+  .qs .where { display: block; font-size: 0.9375rem; color: var(--ink-3); margin-top: 2px; }
+  .qs a { font-weight: 600; }
+  .later { margin-top: 20px; padding-top: 18px; border-top: 2px dashed var(--line-strong); }
+  .later h3 { font-size: 1rem; margin-bottom: 4px; }
+  .later p { color: var(--ink-2); font-size: 1rem; }
+  .bring { margin-top: 20px; padding: 14px 16px; background: var(--amber-tint); border: 1.5px dashed var(--amber); border-radius: 12px; color: #5e2f04; font-size: 1rem; line-height: 1.6; }
+
+  @media (max-width: 920px) { .grid { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) {
+    .hub { padding-inline: 14px; }
+    .intro, .agenda { padding-inline: 20px; }
+    .step a { grid-template-columns: 44px 1fr; padding: 18px 20px; }
+    .step .qn { font-size: 2.25rem; }
+    .step .go { grid-column: 2; }
+    .start { padding-inline: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="hub">
+  <header class="hub-head">
+    <span class="brand">FamilyLink</span>
+    <span class="small">ต้นแบบ Phase 1 สำหรับหารือกับ Thai FamilyLink Association</span>
+  </header>
+
+  <div class="grid">
+    <section class="ticket" aria-labelledby="t">
+      <div class="intro">
+        <h1 id="t">ต้นแบบระบบลงทะเบียนอบรม</h1>
+        <p>จากลิงก์สมัครหนึ่งลิงก์ ไปสู่รายชื่อเดียวที่ส่งออก Excel ได้ ลองกดได้จริงทั้งสามหน้า สิ่งที่ผู้สมัครกรอกจะไปปรากฏในหน้ารายชื่อ</p>
+      </div>
+      <div class="step-tear"></div>
+      <ol class="steps">
+        <li class="step"><a href="create-run.html">
+          <span class="qn" aria-hidden="true">1</span>
+          <div><h2>เปิดรอบอบรม</h2><p>ตั้งชื่อรอบ วันอบรม 1–3 วัน คำถามในฟอร์ม แล้วได้ลิงก์และคิวอาร์โค้ด รอบตัวอย่างเปิดไว้แล้ว กด “เริ่มรอบใหม่แบบว่าง” เพื่อดูตอนสร้างใหม่</p><span class="who">ทีมงาน · คอมพิวเตอร์</span></div>
+          <span class="go">เปิดหน้านี้ FL_CHEV</span></a></li>
+        <li class="step"><a href="register.html">
+          <span class="qn" aria-hidden="true">2</span>
+          <div><h2>ผู้สมัครลงทะเบียน</h2><p>ฟอร์มบนมือถือ ไม่ต้องมี LINE ไม่ต้องสมัครสมาชิก จบด้วยบัตรคิวหนึ่งใบ</p><span class="who">ผู้สมัคร · มือถือ</span></div>
+          <span class="go">เปิดหน้านี้ FL_CHEV</span></a></li>
+        <li class="step"><a href="registrations.html">
+          <span class="qn" aria-hidden="true">3</span>
+          <div><h2>ดูรายชื่อและส่งออก Excel</h2><p>ตรวจรายชื่อ ยืนยันที่นั่ง เพิ่มผู้สมัครหน้างาน ค้นหา และดาวน์โหลดไฟล์</p><span class="who">ทีมงาน · คอมพิวเตอร์</span></div>
+          <span class="go">เปิดหน้านี้ FL_CHEV</span></a></li>
+      </ol>
+      <div class="tear"></div>
+      <div class="start">
+        <a class="btn btn-primary btn-lg" href="register.html">ลองสมัครเหมือนผู้สมัคร</a>
+        <span class="small muted">หลังกดส่ง ให้เปิดหน้า 3 เพื่อดูใบสมัครใหม่</span>
+      </div>
+    </section>
+
+    <section class="ticket agenda" aria-labelledby="ag">
+      <h2 id="ag">เรื่องที่อยากให้ FamilyLink ช่วยยืนยัน (10 ข้อ)</h2>
+      <p>ติ๊กเมื่อคุยจบแล้ว ระบบจำสถานะไว้ในเครื่องนี้</p>
+      <ul class="qs" id="qs"></ul>
+      <div class="bring"><strong>ขอให้นำมาด้วย:</strong> ไฟล์ Excel หรือ Google Sheet ที่ใช้รับสมัครอยู่ 1–2 ไฟล์ และข้อความ PDPA ที่ใช้ตอนนี้ (ถ้ามี)</div>
+      <div class="later"><h3>ยังไม่อยู่ในต้นแบบนี้</h3><p>เข้าสู่ระบบ · เช็คชื่อรายวันและ QR · ใบประกาศนียบัตร · เชื่อม LINE จริง · นำเข้าข้อมูลเดิมจาก Google Sheets · ข้อมูลสุขภาพ (ตั้งใจไม่เก็บ)</p></div>
+    </section>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  'use strict';
+  FL.mountStrip();
+  document.querySelector('.brand').innerHTML = FL.logo + 'FamilyLink';
+  document.querySelectorAll('.go').forEach(g => { g.innerHTML = g.innerHTML.replace('FL_CHEV', FL.icons.chevron); });
+
+  const items = [
+    ['ข้อมูลที่ผู้สมัครต้องกรอกทุกครั้ง มีช่องไหนขาด ช่องไหนเกิน', 'register.html', 'ดูในหน้าฟอร์มสมัคร'],
+    ['ต้องเก็บข้อมูลสุขภาพหรือสภาพครอบครัวหรือไม่ (ต้นแบบนี้เลี่ยงไว้ก่อน)', 'register.html', 'ดูในหน้าฟอร์มสมัคร'],
+    ['ต้องให้ทีมงานอนุมัติก่อนยืนยันที่นั่งหรือไม่ และต้องมีรายชื่อสำรองไหม', 'create-run.html', 'ดูในหน้าเปิดรอบ ส่วน “การรับสมัคร”'],
+    ['หลักสูตรมี 1 วันหรือหลายวัน ผู้สมัครเลือกเฉพาะบางวันได้ไหม', 'create-run.html', 'ดูในหน้าเปิดรอบ ส่วน “วันอบรม”'],
+    ['ไฟล์ Excel ที่ส่งออกควรมีคอลัมน์อะไร ตรงกับไฟล์เดิมหรือไม่', 'registrations.html', 'ลองกดส่งออกในหน้ารายชื่อ'],
+    ['ข้อความ PDPA และระยะเวลาเก็บข้อมูล ใครเป็นผู้รับคำขอลบข้อมูล', 'register.html', 'ดูส่วนความยินยอมในฟอร์ม'],
+    ['ปุ่มใน LINE ควรเป็นปุ่มสมัครปุ่มเดียว หรือรายการรอบที่เปิดอยู่', '', 'ยังไม่มีหน้าในต้นแบบ คุยด้วยปากเปล่า'],
+    ['รอบอบรมจริงรอบแรกที่จะใช้ทดลองคือรอบไหน และต้องเปิดใช้ทันภายในวันที่เท่าไร', '', 'กำหนดเส้นตายและตัวชี้วัดความสำเร็จของ Phase 1'],
+    ['หลักสูตรฟรี มีค่าใช้จ่าย หรือมีผู้สนับสนุน มีค่าธรรมเนียมหรือเงินมัดจำไหม', '', 'ถ้ามีการชำระเงิน ขอบเขตงานจะเปลี่ยน'],
+    ['ต้องมีใบประกาศนียบัตรในเวอร์ชันแรกไหม ถ้าต้องมี เกณฑ์การเข้าอบรมคืออะไร', '', 'ผูกกับการเช็คชื่อรายวันซึ่งยังไม่อยู่ในต้นแบบ']
+  ];
+  let done = FL.store.get(FL.KEYS.agenda, []);
+  const ul = document.getElementById('qs');
+  ul.innerHTML = items.map((it, i) =>
+    '<li><label class="choice"><input type="checkbox" data-i="' + i + '"' + (done.includes(i) ? ' checked' : '') + '><span>' + FL.esc(it[0]) +
+    (it[1] ? '<span class="where"><a href="' + it[1] + '">' + FL.esc(it[2]) + '</a></span>' : '<span class="where">' + FL.esc(it[2]) + '</span>') + '</span></label></li>').join('');
+  ul.addEventListener('change', e => {
+    const i = Number(e.target.dataset.i);
+    done = e.target.checked ? done.concat(i) : done.filter(x => x !== i);
+    FL.store.set(FL.KEYS.agenda, done);
+  });
+})();
+</script>
+</body>
+</html>

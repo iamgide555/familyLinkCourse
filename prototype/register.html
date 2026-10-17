@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ลงทะเบียนอบรม · FamilyLink</title>
+<meta name="theme-color" content="#14201d">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .wrap { width: min(100%, 520px); margin: 0 auto; padding: 20px 16px 0; display: grid; gap: 18px; }
+  .mini-brand { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .course-ticket .pad { padding: 24px 22px 20px; }
+  .course-ticket h1 { margin-top: 2px; }
+  .course-ticket .batch { color: var(--ink-2); font-weight: 600; margin-top: 2px; }
+  .facts { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 12px; }
+  .facts li { display: grid; grid-template-columns: 24px 1fr; gap: 12px; align-items: start; line-height: 1.55; }
+  .facts svg { width: 22px; height: 22px; margin-top: 3px; color: var(--ink-2); }
+  .facts .t2 { color: var(--ink-2); font-size: 1rem; display: block; }
+  .stub { display: grid; grid-template-columns: auto 1fr; gap: 6px 20px; align-items: center; padding: 18px 22px 22px; }
+  .seats { font-family: var(--font-num); font-weight: 600; font-size: 3.25rem; line-height: 1; color: var(--ink); }
+  .seats-note { font-size: 1.0625rem; line-height: 1.5; color: var(--ink-2); }
+  .seats-note strong { color: var(--ink); }
+  .form-ticket .pad { padding: 24px 22px 8px; }
+  .form-ticket h2 { margin-bottom: 4px; }
+  .group + .group { margin-top: 34px; padding-top: 28px; border-top: 2px dashed var(--line-strong); position: relative; }
+  .group > .help { margin-bottom: 18px; }
+  .consent-box { background: var(--ground); border-radius: 12px; padding: 16px; display: grid; gap: 12px; }
+  details.pdpa summary { cursor: pointer; font-weight: 600; color: var(--teal); min-height: 32px; display: flex; align-items: center; gap: 6px; }
+  details.pdpa[open] summary { margin-bottom: 8px; }
+  details.pdpa p { font-size: 1rem; color: var(--ink-2); line-height: 1.65; }
+  .submit-bar {
+    position: sticky; bottom: 0; background: var(--sheet); padding: 14px 22px 18px; margin-top: 26px; border-top: 2px dashed var(--line-strong);
+    border-radius: 0 0 var(--r-lg) var(--r-lg); display: grid; gap: 8px;
+  }
+  .submit-bar .help { text-align: center; }
+  .notice { display: grid; grid-template-columns: 24px 1fr; gap: 12px; padding: 16px; border-radius: 12px; background: var(--amber-tint); border: 1.5px solid var(--amber); color: #5e2f04; line-height: 1.6; }
+  .notice svg { width: 22px; height: 22px; margin-top: 2px; }
+  .notice[hidden] { display: none; }
+  .notice button { margin-top: 6px; }
+  .state-card { text-align: center; padding: 36px 24px 32px; display: grid; gap: 10px; justify-items: center; }
+  .state-card .big { font-family: var(--font-num); font-size: 3rem; font-weight: 600; line-height: 1.1; color: var(--ink-3); }
+
+  /* success ticket */
+  .done { display: grid; gap: 16px; }
+  .done .printing { animation: print-out .8s var(--ease-out) both; transform-origin: top center; }
+  @keyframes print-out { from { clip-path: inset(0 0 100% 0); transform: translateY(-14px); } to { clip-path: inset(0 0 0 0); transform: none; } }
+  .done .head { padding: 26px 22px 20px; }
+  .done .head h1 { font-size: 1.625rem; }
+  .done .head p { color: var(--ink-2); margin-top: 4px; }
+  .segments { display: grid; grid-template-columns: 1fr 1fr; }
+  .segments > div { padding: 18px 22px; display: grid; gap: 6px; align-content: start; }
+  .segments > div + div { border-left: 2px dashed var(--line-strong); }
+  .segments .k { font-size: 1rem; color: var(--ink-2); }
+  .queue-no { font-family: var(--font-num); font-weight: 600; font-size: 4.5rem; line-height: 1; letter-spacing: 0; }
+  .qr-row { display: grid; grid-template-columns: 132px 1fr; gap: 18px; padding: 20px 22px 24px; align-items: center; }
+  .qr-row svg { width: 132px; height: 132px; border: 1.5px solid var(--line); border-radius: 8px; }
+  .next-steps { display: grid; gap: 10px; }
+  .next-steps li { margin-left: 0; }
+  .what-next { padding: 22px; }
+  .what-next ol { margin: 10px 0 0; padding-left: 22px; display: grid; gap: 6px; }
+  @media (max-width: 380px) {
+    .qr-row { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+    .queue-no { font-size: 3.5rem; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap" id="app" aria-live="polite"></main>
+<div style="height:40px"></div>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  'use strict';
+  const { icons, esc, fmtDate, fmtDateLong, fmtDateTime, pad3, provinces, relations, relationText } = FL;
+  FL.mountStrip();
+
+  const run = FL.getRun();
+  let regs = FL.getRegs();
+  const app = document.getElementById('app');
+  const counts = FL.seatCounts(regs, run);
+  const miniBrand = '<div class="mini-brand"><a class="brand" href="index.html">' + FL.logo + 'FamilyLink</a><span class="small muted">Thai FamilyLink Association</span></div>';
+
+  const sessionRows = run.sessions.map((s, i) =>
+    '<li>' + icons.cal + '<span><strong>วันที่ ' + (i + 1) + '</strong> · ' + esc(fmtDateLong(s.date)) +
+    '<span class="t2">' + esc(s.start) + '–' + esc(s.end) + ' น.' + (s.place ? ' · ' + esc(s.place) : '') + '</span></span></li>'
+  ).join('');
+
+  function courseTicket() {
+    const full = counts.free === 0;
+    return '<header class="ticket course-ticket">' +
+      '<div class="pad"><h1>' + esc(run.course) + '</h1><p class="batch">' + esc(run.batch) + '</p>' +
+      '<ul class="facts">' + sessionRows +
+      '<li>' + icons.pin + '<span>' + esc(run.location) + '</span></li></ul></div>' +
+      '<div class="tear"></div>' +
+      '<div class="stub"><div class="seats" aria-hidden="true">' + counts.free + '</div>' +
+      '<p class="seats-note"><strong>ที่นั่งว่างจาก ' + run.capacity + ' ที่นั่ง</strong><br>' +
+      (full ? (run.waitlist ? 'เต็มแล้ว แต่ยังลงชื่อสำรองได้' : 'เต็มแล้ว') : 'ปิดรับสมัคร ' + esc(fmtDate(run.closes))) + '</p></div>' +
+      '</header>';
+  }
+
+  /* ---------- state cards ---------- */
+  function stateCard(title, msg) {
+    return '<section class="ticket state-card"><div class="big" aria-hidden="true">—</div><h1>' + title + '</h1><p class="muted">' + msg + '</p></section>';
+  }
+
+  /* ---------- form ---------- */
+  function errorHtml(id, msg) { return '<p class="error-msg" id="' + id + '-err">' + icons.alert + '<span>' + msg + '</span></p>'; }
+
+  function questionHtml(q) {
+    const req = q.required ? '<span class="req" aria-hidden="true">*</span>' : '<span class="opt">ไม่บังคับ</span>';
+    const reqAttr = q.required ? ' aria-required="true"' : '';
+    const id = 'f-' + q.id;
+    const helpHtml = q.hint ? '<p class="help" id="' + id + '-help">' + esc(q.hint) + '</p>' : '';
+    let control = '';
+    const opts = q.options || [];
+    if (q.type === 'short') control = '<input class="input" id="' + id + '" name="' + q.id + '" type="text"' + reqAttr + '>';
+    else if (q.type === 'long') control = '<textarea class="textarea" id="' + id + '" name="' + q.id + '" rows="3"' + reqAttr + '></textarea>';
+    else if (q.type === 'date') control = '<input class="input" id="' + id + '" name="' + q.id + '" type="date"' + reqAttr + '>';
+    else if (q.type === 'dropdown') control = '<select class="select" id="' + id + '" name="' + q.id + '"' + reqAttr + '><option value="">เลือก</option>' + opts.map(o => '<option>' + esc(o) + '</option>').join('') + '</select>';
+    else {
+      const t = q.type === 'checkbox' ? 'checkbox' : 'radio';
+      control = '<div class="choices" role="' + (t === 'radio' ? 'radiogroup' : 'group') + '" aria-labelledby="' + id + '-label">' +
+        opts.map(o => '<label class="choice"><input type="' + t + '" name="' + q.id + '" value="' + esc(o) + '"><span>' + esc(o) + '</span></label>').join('') + '</div>';
+    }
+    const labelTag = (q.type === 'radio' || q.type === 'checkbox') ? 'div' : 'label';
+    const forAttr = labelTag === 'label' ? ' for="' + id + '"' : '';
+    return '<div class="field" data-q="' + q.id + '" data-type="' + q.type + '" data-required="' + (q.required ? 1 : 0) + '">' +
+      '<' + labelTag + ' class="label" id="' + id + '-label"' + forAttr + '>' + esc(q.label) + req + '</' + labelTag + '>' + helpHtml + control + errorHtml(id, 'กรุณาตอบคำถามนี้') + '</div>';
+  }
+
+  function formHtml() {
+    const years = []; for (let y = 2565; y >= 2470; y--) years.push('<option value="' + y + '">พ.ศ. ' + y + '</option>');
+    return '<form class="ticket form-ticket" id="regForm" novalidate>' +
+      '<div class="pad">' +
+      '<div class="notice" id="dupNotice" hidden role="alert">' + icons.alert + '<div><strong id="dupTitle"></strong><div id="dupBody"></div><button type="button" class="btn btn-secondary" id="dupShow">ดูบัตรคิวของฉัน</button></div></div>' +
+      '<section class="group" style="margin-top:0"><h2>ข้อมูลของท่าน</h2><p class="help">ใช้เพื่อลงทะเบียนและติดต่อเรื่องการอบรมนี้เท่านั้น</p>' +
+      '<div class="field" id="fld-name"><label class="label" for="name">ชื่อ-นามสกุล<span class="req" aria-hidden="true">*</span></label>' +
+      '<input class="input" id="name" name="name" type="text" autocomplete="name" aria-required="true" aria-describedby="name-err">' + errorHtml('name', 'กรุณากรอกชื่อและนามสกุล') + '</div>' +
+      '<div class="field" id="fld-phone"><label class="label" for="phone">เบอร์โทรศัพท์<span class="req" aria-hidden="true">*</span></label>' +
+      '<p class="help" id="phone-help">ทีมงานใช้เบอร์นี้ติดต่อท่าน และตรวจว่าท่านเคยลงทะเบียนแล้วหรือไม่</p>' +
+      '<input class="input" id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="เช่น 081-234-5678" aria-required="true" aria-describedby="phone-help phone-err">' + errorHtml('phone', 'กรุณากรอกเบอร์โทรศัพท์ 10 หลัก เช่น 081-234-5678') + '</div>' +
+      (run.emailField ? '<div class="field" id="fld-email"><label class="label" for="email">อีเมล<span class="opt">ไม่บังคับ</span></label>' +
+      '<input class="input" id="email" name="email" type="email" autocomplete="email" inputmode="email" aria-describedby="email-err">' + errorHtml('email', 'รูปแบบอีเมลไม่ถูกต้อง') + '</div>' : '') +
+      '<div class="field" id="fld-province"><label class="label" for="province">จังหวัดที่อาศัยอยู่<span class="req" aria-hidden="true">*</span></label>' +
+      '<select class="select" id="province" name="province" aria-required="true" aria-describedby="province-err"><option value="">เลือกจังหวัด</option>' + provinces.map(p => '<option>' + p + '</option>').join('') + '</select>' + errorHtml('province', 'กรุณาเลือกจังหวัด') + '</div>' +
+      '<div class="field" id="fld-birth"><label class="label" for="birthYear">ปีเกิด<span class="opt">ไม่บังคับ</span></label>' +
+      '<select class="select" id="birthYear" name="birthYear"><option value="">เลือกปีเกิด</option>' + years.join('') + '</select></div>' +
+      '<div class="field" id="fld-relation"><div class="label" id="relation-label">ท่านดูแลใครอยู่<span class="req" aria-hidden="true">*</span></div>' +
+      '<div class="choices" role="radiogroup" aria-labelledby="relation-label" aria-describedby="relation-err">' +
+      relations.map(r => '<label class="choice"><input type="radio" name="relation" value="' + r.v + '"><span>' + r.t + '</span></label>').join('') + '</div>' + errorHtml('relation', 'กรุณาเลือกข้อใดข้อหนึ่ง') + '</div>' +
+      '</section>' +
+      (run.questions.length ? '<section class="group"><h2>คำถามของรอบนี้</h2><p class="help">ทีมงานตั้งคำถามเหล่านี้สำหรับรอบอบรมนี้โดยเฉพาะ</p>' + run.questions.map(questionHtml).join('') + '</section>' : '') +
+      '<section class="group"><h2>ความยินยอมด้านข้อมูลส่วนบุคคล</h2><p class="help">โปรดอ่านก่อนกดส่งใบสมัคร</p>' +
+      '<div class="consent-box">' +
+      '<div class="field" id="fld-consent"><label class="choice" style="background:#fff"><input type="checkbox" id="consent" name="consent" aria-required="true" aria-describedby="consent-err"><span>ข้าพเจ้ายินยอมให้ Thai FamilyLink Association เก็บและใช้ข้อมูลข้างต้น เพื่อการลงทะเบียนและติดต่อเกี่ยวกับการอบรมนี้<span class="req" aria-hidden="true"> *</span></span></label>' + errorHtml('consent', 'ต้องยินยอมจึงจะลงทะเบียนได้') + '</div>' +
+      '<details class="pdpa"><summary>อ่านรายละเอียดการใช้ข้อมูล</summary><p>ข้อความตัวอย่าง รอ FamilyLink ยืนยันถ้อยคำและระยะเวลาเก็บข้อมูล: ข้อมูลจะถูกเก็บไว้ในระบบขององค์กรนี้เท่านั้น ไม่ส่งต่อให้องค์กรอื่น ท่านขอดู แก้ไข หรือลบข้อมูลของท่านได้โดยติดต่อทีมงาน</p></details>' +
+      '<label class="choice" style="background:#fff"><input type="checkbox" name="news"><span>ยินยอมให้ส่งข่าวสารกิจกรรมครั้งต่อไป <span class="muted">(ไม่บังคับ แยกจากการลงทะเบียน)</span></span></label>' +
+      '</div></section>' +
+      '</div>' +
+      '<div class="submit-bar"><button class="btn btn-primary btn-lg btn-block" type="submit">' + (counts.free === 0 ? 'ลงชื่อรายชื่อสำรอง' : 'ส่งใบสมัคร') + '</button>' +
+      '<p class="help">ต้องกรอกช่องที่มีเครื่องหมาย * ครบก่อนส่ง</p></div>' +
+      '</form>';
+  }
+
+  /* ---------- render ---------- */
+  function renderForm() {
+    if (run.status === 'closed') {
+      app.innerHTML = miniBrand + courseTicket() + stateCard('ปิดรับสมัครแล้ว', 'รอบนี้ปิดรับสมัครแล้ว หากสนใจกรุณาติดต่อทีมงานหรือรอรอบถัดไป');
+      return;
+    }
+    if (counts.free === 0 && !run.waitlist) {
+      app.innerHTML = miniBrand + courseTicket() + stateCard('ที่นั่งเต็มแล้ว', 'รอบนี้เต็มแล้ว และไม่ได้เปิดรายชื่อสำรอง ติดตามรอบถัดไปได้ทาง LINE ของสมาคม');
+      return;
+    }
+    app.innerHTML = miniBrand + courseTicket() + formHtml();
+    bindForm();
+  }
+
+  function setInvalid(wrapId, on, msg) {
+    const f = document.getElementById(wrapId); if (!f) return;
+    f.classList.toggle('invalid', on);
+    if (msg) { const m = f.querySelector('.error-msg span'); if (m) m.textContent = msg; }
+  }
+
+  function validate(form) {
+    const bad = [];
+    const v = n => (form.elements[n] ? String(form.elements[n].value || '').trim() : '');
+    const mark = (id, on, msg) => { setInvalid(id, on, msg); if (on) bad.push(id); };
+    mark('fld-name', v('name').length < 2);
+    const ph = FL.normPhone(v('phone'));
+    mark('fld-phone', !(ph.length === 10 && ph[0] === '0'));
+    if (form.elements.email) mark('fld-email', v('email') !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('email')));
+    mark('fld-province', v('province') === '');
+    mark('fld-relation', !form.querySelector('input[name="relation"]:checked'));
+    form.querySelectorAll('[data-q]').forEach(f => {
+      if (f.dataset.required !== '1') return;
+      const t = f.dataset.type, id = f.dataset.q;
+      let ok;
+      if (t === 'radio' || t === 'checkbox') ok = !!f.querySelector('input:checked');
+      else ok = String((f.querySelector('[name="' + id + '"]') || {}).value || '').trim() !== '';
+      f.classList.toggle('invalid', !ok);
+      if (!ok) bad.push(f.id || ('q-' + id));
+    });
+    mark('fld-consent', !form.elements.consent.checked);
+    return bad;
+  }
+
+  function firstInvalidControl(form) {
+    const f = form.querySelector('.field.invalid');
+    if (!f) return null;
+    return f.querySelector('input, select, textarea');
+  }
+
+  function bindForm() {
+    const form = document.getElementById('regForm');
+    const dupNotice = document.getElementById('dupNotice');
+    let dupReg = null;
+
+    // clear errors as the person fixes them
+    form.addEventListener('input', e => { const f = e.target.closest('.field'); if (f && f.classList.contains('invalid')) f.classList.remove('invalid'); dupNotice.hidden = true; });
+    form.addEventListener('change', e => { const f = e.target.closest('.field'); if (f && f.classList.contains('invalid')) f.classList.remove('invalid'); });
+    const phoneEl = document.getElementById('phone');
+    phoneEl.addEventListener('blur', () => { const d = FL.normPhone(phoneEl.value); if (d.length === 10) phoneEl.value = FL.prettyPhone(d); });
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const bad = validate(form);
+      if (bad.length) {
+        const c = firstInvalidControl(form);
+        if (c) { c.focus(); c.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }
+        return;
+      }
+      const phone = FL.normPhone(form.elements.phone.value);
+      regs = FL.getRegs();
+      dupReg = regs.find(r => FL.normPhone(r.phone) === phone && r.status !== 'cancelled');
+      if (dupReg) {
+        document.getElementById('dupTitle').textContent = 'เบอร์นี้ลงทะเบียนรอบนี้แล้ว';
+        document.getElementById('dupBody').textContent = 'บัตรคิวหมายเลข ' + pad3(dupReg.no) + ' ไม่จำเป็นต้องสมัครซ้ำ';
+        dupNotice.hidden = false;
+        dupNotice.scrollIntoView({ block: 'center' });
+        document.getElementById('dupShow').onclick = () => renderDone(dupReg, true);
+        return;
+      }
+      const answers = {};
+      run.questions.forEach(q => {
+        if (q.type === 'checkbox') answers[q.id] = Array.from(form.querySelectorAll('input[name="' + q.id + '"]:checked')).map(i => i.value).join(', ');
+        else if (q.type === 'radio') { const c = form.querySelector('input[name="' + q.id + '"]:checked'); answers[q.id] = c ? c.value : ''; }
+        else answers[q.id] = String(form.elements[q.id].value || '').trim();
+      });
+      const cnt = FL.seatCounts(regs, run);
+      let status = run.requireApproval ? 'submitted' : 'approved';
+      if (cnt.free === 0) status = 'waitlist';
+      const reg = {
+        id: 'reg-' + Date.now(),
+        no: regs.reduce((m, r) => Math.max(m, r.no), 0) + 1,
+        name: form.elements.name.value.trim(),
+        phone: FL.prettyPhone(phone),
+        email: form.elements.email ? form.elements.email.value.trim() : '',
+        province: form.elements.province.value,
+        birthYear: form.elements.birthYear.value ? Number(form.elements.birthYear.value) : null,
+        relation: form.querySelector('input[name="relation"]:checked').value,
+        source: 'link', status: status,
+        at: new Date().toISOString(), consentAt: new Date().toISOString(),
+        newsConsent: form.elements.news.checked,
+        priorRuns: 0, answers: answers, isNew: true
+      };
+      regs.push(reg);
+      FL.setRegs(regs);
+      renderDone(reg, false);
+    });
+  }
+
+  function renderDone(reg, already) {
+    const first = run.sessions[0];
+    const msg = reg.status === 'approved' ? 'ที่นั่งของท่านได้รับการยืนยันแล้ว'
+      : reg.status === 'waitlist' ? 'ที่นั่งเต็มแล้ว ท่านอยู่ในรายชื่อสำรอง ทีมงานจะติดต่อเมื่อมีที่ว่าง'
+      : 'ทีมงานจะตรวจสอบและแจ้งผลยืนยันที่นั่งให้ท่านทราบ';
+    app.innerHTML = miniBrand + '<div class="done">' +
+      '<section class="ticket printing" aria-labelledby="doneTitle">' +
+      '<div class="head"><h1 id="doneTitle" tabindex="-1">' + (already ? 'ท่านลงทะเบียนไว้แล้ว' : 'ส่งใบสมัครเรียบร้อย') + '</h1>' +
+      '<p><strong>' + esc(reg.name) + '</strong><br>' + esc(run.course) + ' · ' + esc(run.batch) + '</p></div>' +
+      '<div class="tear"></div>' +
+      '<div class="segments"><div><span class="k">บัตรคิวหมายเลข</span><span class="queue-no">' + pad3(reg.no) + '</span></div>' +
+      '<div><span class="k">สถานะ</span><span>' + FL.pill(reg.status) + '</span><span class="k" style="margin-top:6px">เริ่มอบรม</span><span><strong>' + esc(fmtDate(first.date)) + '</strong><br><span class="k">' + esc(first.start) + ' น.</span></span></div></div>' +
+      '<div class="tear"></div>' +
+      '<div class="qr-row">' + FL.qrSvg(reg.id + reg.phone, 132) + '<div><p><strong>แสดงบัตรนี้ที่หน้างาน</strong></p><p class="muted small">คิวอาร์โค้ดนี้เป็นตัวอย่าง ใช้สำหรับเช็คอินในระยะถัดไป</p></div></div>' +
+      '</section>' +
+      '<section class="ticket what-next no-print"><h2>ขั้นตอนต่อไป</h2><p style="margin-top:6px">' + msg + '</p>' +
+      '<ol><li>บันทึกหรือพิมพ์บัตรคิวนี้ไว้</li><li>ทีมงานจะติดต่อทางเบอร์ ' + esc(reg.phone) + ' หากมีการเปลี่ยนแปลง</li></ol>' +
+      '<div class="next-steps" style="margin-top:18px">' +
+      '<button class="btn btn-primary btn-lg btn-block" type="button" id="btnPrint">' + icons.print + 'พิมพ์หรือบันทึกเป็น PDF</button>' +
+      '<button class="btn btn-secondary btn-block" type="button" id="btnLine">' + icons.chat + 'เพิ่มเพื่อน LINE เพื่อรับการแจ้งเตือน</button>' +
+      '<button class="btn btn-quiet btn-block" type="button" id="btnAgain">ลงทะเบียนอีกคน</button>' +
+      '</div></section></div>';
+    window.scrollTo(0, 0);
+    document.getElementById('doneTitle').focus({ preventScroll: true });
+    document.getElementById('btnPrint').onclick = () => window.print();
+    document.getElementById('btnLine').onclick = () => FL.toast('ตัวอย่าง: ตอนใช้งานจริงจะเปิด LINE Official Account');
+    document.getElementById('btnAgain').onclick = () => { counts.free = FL.seatCounts(FL.getRegs(), run).free; renderForm(); window.scrollTo(0, 0); };
+  }
+
+  renderForm();
+})();
+</script>
+</body>
+</html>
