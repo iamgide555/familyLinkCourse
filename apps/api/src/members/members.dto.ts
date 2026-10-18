@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
+  IsBoolean,
   IsEmail,
   IsIn,
   IsInt,
@@ -42,6 +43,11 @@ export class StaffIntakeDto {
   @IsString()
   @MaxLength(20)
   citizenId?: string;
+  @IsOptional() @IsBoolean() noCitizenId?: boolean;
+  @ValidateIf((_object, value: unknown) => value !== undefined)
+  @IsString()
+  @MaxLength(500)
+  citizenIdMissingReason?: string;
   @ValidateIf((_object, value: unknown) => value !== undefined)
   @IsString()
   @MaxLength(500)

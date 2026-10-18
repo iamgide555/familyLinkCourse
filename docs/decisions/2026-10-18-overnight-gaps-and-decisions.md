@@ -162,3 +162,19 @@ Running log kept while finishing POC features. Each entry: what was found, what 
 - **Not done (P3):** splitting the 19-field member signup into 3 steps (touches the member flow; say if you want it).
 - **Reverse:** `staff-layout.component.ts`, `styles.css`, `run-sessions.component.ts`, `member-profile.component.ts`.
 - **Test impact:** e2e helpers `openMore` / `goStaff` open the เพิ่มเติม menu; row actions are clicked via จัดการ.
+
+## D26 — Four job tabs replace the เพิ่มเติม menu
+- **Gap/Issue:** the "more" menu hid nine pages, including paper intake and failed-message follow-up, from staff least likely to open a menu.
+- **Decision (you agreed):** four always-visible tabs by job. **สมาชิก** (ค้นหา, เพิ่มจากใบสมัคร, รอตรวจสอบ, สร้างลิงก์สมัคร, member pages), **วันนี้** (ภาพรวม, เช็คชื่อ and rosters, ข้อความแจ้งเตือน), **คอร์ส** (courses, runs, walk-in), **รายงานและตั้งค่า** (รายงาน; admin only: service/document settings, system settings, staff accounts; staff see just "รายงาน"). Each tab with several pages shows sibling chips above the content. Counts: review queue on สมาชิก, failed messages on วันนี้.
+- **My calls:** สมาชิก is first because login lands on member search; check-in lives under วันนี้ only (no second chip under คอร์ส); logout, name and colour mode moved into the app bar so they are always visible.
+- **Reverse:** `staff-layout.component.ts` holds the tab and chip tables.
+- **Test impact:** `goStaff()` in `tests/e2e/helpers.ts` opens the right tab then chip; `navigation.spec.ts` covers tabs, chips, active tab on deep pages and the phone bar.
+
+## D27 — ID number and birth date required everywhere a member is created
+- **Gap/Issue:** the ID number was optional and hidden in a collapsed section; LINE signup never asked for it.
+- **Decision (you chose all paths):** required on staff paper intake, LINE signup (self or family member), browser-invite signup and walk-in new members. Validated as 13 digits plus the Thai check digit. A person with no ID can be saved by ticking "ไม่มีเลขบัตรประชาชน" and giving a reason; the reason is stored encrypted with the record and the profile shows "ไม่มีเลขบัตร".
+- **Birth date (added after you pointed out it identifies people):** also required on paper intake and walk-in; LINE and invite signup already required it. Same rule for older records: a record that has a date cannot lose it, one that never had it can still be edited.
+- **My calls:** older records that never had an ID stay editable for other changes, but a record that has an ID (or a reason) cannot lose it. A signup whose ID number already belongs to a member is held for staff to review (never creates a second person with that number). Required fields show a "จำเป็น" word badge, not a red asterisk.
+- **Needs legal review:** the number is now collected from members online. The privacy notice and consent text must say so, and that it is stored encrypted and used to avoid duplicate records. I did not change the legal text.
+- **Reverse:** `requireCitizenId` in `member-validation.ts` and its callers (`members.service.ts`, `signup.service.ts`).
+

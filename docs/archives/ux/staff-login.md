@@ -36,7 +36,7 @@
 
 ## Incumbent comparison and preserved drift
 
-- **Inherited world:** `prototype/styles.css`, `docs/archives/DESIGN.md` and `.impeccable/design.json` establish pale mint ground (`#dce8e5`), cool sheet (`#fbfcfb`), green ink (`#14201d`), teal actions (`#0a6b5a`), Sarabun/Kanit and soft depth. The login retains these values and a dashed recovery divider.
+- **Inherited world:** `docs/archives/prototype/styles.css`, `docs/archives/DESIGN.md` and `.impeccable/design.json` establish pale mint ground (`#dce8e5`), cool sheet (`#fbfcfb`), green ink (`#14201d`), teal actions (`#0a6b5a`), Sarabun/Kanit and soft depth. The login retains these values and a dashed recovery divider.
 - **Local adaptations:** body text increases from the prototype's `17px` to `18px`; login controls increase to `56px`; fields use `8px` corners and the form uses `16px` corners. The login uses a quiet bounded sheet without the prototype's ticket notches or queue numerals. These are surface decisions, not replacement system tokens.
 - **Preexisting drift:** root `DESIGN.md` is missing while the archived system and existing sidecar remain. This pass preserves them and does not repair or reframe the project-wide design system.
 - **Write boundary:** this document records the finished login only; app code, `PRODUCT.md`, the surface contract, archived files, `.impeccable/design.json`, plans and implementation ledgers are unchanged by this documentation pass.

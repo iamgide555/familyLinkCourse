@@ -1,3 +1,4 @@
+import { withIdentity } from './helpers.js';
 import request from 'supertest';
 import { hash } from 'argon2';
 import { randomUUID } from 'node:crypto';
@@ -15,7 +16,7 @@ describe('staff printable signup and physical signature receipt', () => {
       .post(path)
       .set('Cookie', cookie)
       .set('X-CSRF-Token', csrf)
-      .send(body);
+      .send(path === '/api/members' ? withIdentity(body) : body);
   const get = (path: string) => request(ctx.app.getHttpServer()).get(path).set('Cookie', cookie);
   const addMember = async (body: object) => {
     const response = await post('/api/members', body);

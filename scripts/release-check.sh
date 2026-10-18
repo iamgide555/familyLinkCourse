@@ -16,7 +16,7 @@ trap cleanup EXIT
 DOMAIN=familylink.example.test POSTGRES_PASSWORD=x APP_DB_PASSWORD=x BACKUP_DIR=/tmp RCLONE_CONFIG_DIR=/tmp docker compose -f compose.yml config --quiet
 echo "compose.yml is valid"
 step "secrets are not tracked"
-if git ls-files | grep -E '(^|/)\.env($|\.)' | grep -v '\.env\.example$'; then echo "A real .env file is tracked by Git." >&2; exit 1; fi
+if git ls-files | grep -E '(^|/)\.env($|\.)' | grep -vE '\.env\.(production\.)?example$'; then echo "A real .env file is tracked by Git." >&2; exit 1; fi
 if git grep -nE '(AKIA[0-9A-Z]{16}|-----BEGIN (RSA |EC )?PRIVATE KEY-----)' -- . ':!docs' >/dev/null 2>&1; then echo "A key-like secret is in the repository." >&2; exit 1; fi
 echo "no tracked secrets found"
 printf '\nRelease checks passed. Deploy only this verified build; real-data use still needs the launch inputs in docs/operations/runbook.md.\n'

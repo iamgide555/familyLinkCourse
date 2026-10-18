@@ -22,7 +22,7 @@ import { errorText, shortDate } from '../../member/shared/thai';
             <li [class.is-cancelled]="x.status === 'cancelled'">
               <span><strong>{{ x.courseName }} · {{ x.batchName }}</strong><br />{{ date(x.date) }} · {{ x.startTime }}–{{ x.endTime }} น.
                 <span class="record-state"> · {{ x.status === 'cancelled' ? 'ยกเลิกแล้ว' : 'จองไว้ ' + x.registered + ' · มา ' + x.present + ' · ไม่มา ' + x.absent + ' · ยังไม่เช็ค ' + x.unmarked }}</span></span>
-              @if (x.status === 'scheduled') { <a class="button-secondary" [routerLink]="['/staff/attendance', x.sessionId]">เช็คชื่อ</a> }
+              @if (x.status === 'scheduled') { <a class="button-primary" [routerLink]="['/staff/attendance', x.sessionId]">เช็คชื่อ</a> }
             </li>
           }
         </ul>

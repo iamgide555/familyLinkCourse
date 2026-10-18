@@ -1,3 +1,4 @@
+import { validCitizenId } from './helpers.js';
 import request from 'supertest';
 import { hash } from 'argon2';
 import { createTestApp, type TestApp } from './test-app.js';
@@ -21,7 +22,7 @@ describe('signup review, LINE links and caregiver access', () => {
     return method === 'get' ? r : r.set('X-CSRF-Token', session.csrf);
   };
   const body = (first: string, last: string, birthDate: string, extra: object = {}) => ({
-    firstName: first, lastName: last, birthDate, phoneMobile: '0812345678', memberType: 'caregiver',
+    citizenId: validCitizenId(), firstName: first, lastName: last, birthDate, phoneMobile: '0812345678', memberType: 'caregiver',
     provinceId: 'กระบี่', districtId: 'เกาะลันตา', requestedServiceIds: [serviceTypeId], registeringFor: 'self', privacyConsent: consent, ...extra,
   });
   const signup = (lineId: string, payload: object) => http().post('/api/member/signup').set(line(lineId)).send(payload);

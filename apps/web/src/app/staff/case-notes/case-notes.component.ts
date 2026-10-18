@@ -149,9 +149,9 @@ import { SessionService } from '../../core/session.service';
       .case-notes {
         margin: 2rem 0 0;
         padding: 1.5rem;
-        border: 1px solid #d7e4df;
+        border: 1px solid var(--line);
         border-radius: 1rem;
-        background: #fff;
+        background: var(--surface);
       }
       .section-heading h2 {
         margin: 0 0 0.35rem;
@@ -161,7 +161,7 @@ import { SessionService } from '../../core/session.service';
       .edit-help,
       .note-meta,
       .revision-meta span {
-        color: #52645d;
+        color: var(--ink-soft);
       }
       .section-heading p {
         margin: 0 0 1.25rem;
@@ -169,7 +169,7 @@ import { SessionService } from '../../core/session.service';
       .note-form {
         padding: 1rem;
         border-radius: 0.75rem;
-        background: #f3f8f5;
+        background: var(--soft);
       }
       label {
         display: block;
@@ -183,15 +183,15 @@ import { SessionService } from '../../core/session.service';
         box-sizing: border-box;
         resize: vertical;
         padding: 0.75rem;
-        border: 1px solid #a8bdb2;
+        border: 1px solid var(--control-border);
         border-radius: 0.5rem;
         font: inherit;
-        color: #173e2f;
-        background: #fff;
+        color: var(--ink);
+        background: var(--surface);
       }
       textarea:focus-visible,
       button:focus-visible {
-        outline: 3px solid #126c51;
+        outline: 3px solid var(--action);
         outline-offset: 2px;
       }
       .form-actions,
@@ -214,10 +214,10 @@ import { SessionService } from '../../core/session.service';
         opacity: 0.55;
       }
       .button-danger {
-        border: 1px solid #9b312d;
+        border: 1px solid var(--error);
         border-radius: 0.5rem;
-        color: #8b2925;
-        background: #fff;
+        color: var(--error);
+        background: var(--surface);
         padding: 0.55rem 0.85rem;
         font: inherit;
         font-weight: 700;
@@ -236,7 +236,7 @@ import { SessionService } from '../../core/session.service';
         gap: 1rem;
       }
       .note-card {
-        border: 1px solid #dae6e0;
+        border: 1px solid var(--line);
         border-radius: 0.75rem;
         padding: 1rem;
       }
@@ -260,7 +260,7 @@ import { SessionService } from '../../core/session.service';
       .revision-panel {
         margin-top: 1rem;
         padding: 1rem;
-        background: #f7faf8;
+        background: var(--soft);
         border-radius: 0.6rem;
       }
       .revision-panel h3 {
@@ -272,7 +272,7 @@ import { SessionService } from '../../core/session.service';
         gap: 0.75rem;
       }
       .revision-list li {
-        border-top: 1px solid #d7e4df;
+        border-top: 1px solid var(--line);
         padding-top: 0.75rem;
       }
       @media (max-width: 480px) {

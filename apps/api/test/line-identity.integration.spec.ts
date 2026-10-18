@@ -2,7 +2,7 @@ import request from 'supertest';
 import { randomUUID } from 'node:crypto';
 import { createTestApp, type TestApp } from './test-app.js';
 import { startStub, type Stub } from './stubs.js';
-import { consent } from './helpers.js';
+import { consent, validCitizenId } from './helpers.js';
 
 describe('real LINE identity verification', () => {
   let ctx: TestApp;
@@ -12,7 +12,7 @@ describe('real LINE identity verification', () => {
   const claims = (over: object = {}) => ({ iss: 'https://access.line.me', sub: 'Uverified0001', aud: 'login-channel', exp: now() + 3600, name: 'ผู้ใช้จริง', ...over });
   const verifyHits = () => line.requests.filter((r) => r.url === '/oauth2/v2.1/verify');
   const http = () => request(ctx.app.getHttpServer());
-  const body = (extra: object = {}) => ({ firstName: 'ยืนยันตัวตน', lastName: 'ไลน์', birthDate: '1980-06-06', phoneMobile: '0812345678', memberType: 'caregiver', provinceId: 'กระบี่', districtId: 'เกาะลันตา', requestedServiceIds: [serviceTypeId], registeringFor: 'self', privacyConsent: consent, ...extra });
+  const body = (extra: object = {}) => ({ citizenId: validCitizenId(), firstName: 'ยืนยันตัวตน', lastName: 'ไลน์', birthDate: '1980-06-06', phoneMobile: '0812345678', memberType: 'caregiver', provinceId: 'กระบี่', districtId: 'เกาะลันตา', requestedServiceIds: [serviceTypeId], registeringFor: 'self', privacyConsent: consent, ...extra });
   beforeAll(async () => {
     line = await startStub((req) => {
       const token = new URLSearchParams(req.body).get('id_token') ?? '';

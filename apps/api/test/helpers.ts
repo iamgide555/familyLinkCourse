@@ -22,9 +22,33 @@ export function staffCaller(ctx: TestApp, session: Session) {
   return (method: 'get' | 'post' | 'patch' | 'put' | 'delete', path: string, body?: unknown) => {
     const r = http(ctx)[method](path).set('Cookie', session.cookie);
     const withCsrf = method === 'get' ? r : r.set('X-CSRF-Token', session.csrf);
-    return body === undefined ? withCsrf : withCsrf.send(body as object);
+    const payload = method === 'post' && path === '/api/members' && body && typeof body === 'object' ? withIdentity(body as object) : body;
+    return payload === undefined ? withCsrf : withCsrf.send(payload as object);
   };
 }
+let idSeq = Math.floor(Math.random() * 1e7);
+/** A well-formed, unique 13-digit ID number (valid check digit) for fixtures that are not about the ID itself. */
+export function validCitizenId(): string {
+  const base = '1' + String(++idSeq).padStart(11, '0');
+  const sum = [...base].reduce((total, digit, i) => total + Number(digit) * (13 - i), 0);
+  return base + ((11 - (sum % 11)) % 10);
+}
+/** Adds a valid ID number to a member body unless the test supplies its own or opts out with noCitizenId. */
+let birthSeq = Math.floor(Math.random() * 5000);
+/** A plausible, varied birth date so unrelated fixtures never look like duplicates of each other. */
+export function validBirthDate(): string {
+  const n = ++birthSeq;
+  const year = 1950 + (n % 55);
+  const month = 1 + (Math.floor(n / 55) % 12);
+  const day = 1 + (Math.floor(n / 660) % 28);
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+export const withIdentity = <T extends object>(body: T): T & { citizenId?: string; birthDate?: string } => {
+  const out: Record<string, unknown> = { ...(body as Record<string, unknown>) };
+  if (!('citizenId' in out) && !('noCitizenId' in out)) out['citizenId'] = validCitizenId();
+  if (!('birthDate' in out)) out['birthDate'] = validBirthDate();
+  return out as T & { citizenId?: string; birthDate?: string };
+};
 export const lineHeader = (id: string) => ({ 'x-dev-line-user-id': `synthetic-${id}` });
 export const key = () => randomUUID();
 
@@ -32,7 +56,7 @@ export const key = () => randomUUID();
 export async function joinLine(ctx: TestApp, lineId: string, first: string, last: string, birth: string, serviceTypeId: string, extra: object = {}): Promise<string> {
   const response = await http(ctx).post('/api/member/signup').set(lineHeader(lineId)).send({
     firstName: first, lastName: last, birthDate: birth, phoneMobile: '0812345678', memberType: 'caregiver', provinceId: 'กระบี่',
-    districtId: 'เกาะลันตา', requestedServiceIds: [serviceTypeId], registeringFor: 'self', privacyConsent: consent, ...extra,
+    districtId: 'เกาะลันตา', requestedServiceIds: [serviceTypeId], registeringFor: 'self', privacyConsent: consent, ...withIdentity(extra),
   });
   if (response.body.kind !== 'created') throw new Error(`signup did not create: ${JSON.stringify(response.body)}`);
   return response.body.memberId as string;

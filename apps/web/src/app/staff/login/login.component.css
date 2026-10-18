@@ -40,7 +40,7 @@ input {
   min-height: 56px;
   border: 1px solid var(--line-strong);
   border-radius: 8px;
-  background: #fff;
+  background: var(--surface);
   padding: 0.75rem 1rem;
   color: var(--ink);
   caret-color: var(--action);
@@ -80,7 +80,7 @@ input[aria-invalid='true'] {
   margin: 0.25rem 0 0;
 }
 .login-recovery {
-  border-top: 1px dashed var(--line-strong);
+  border-top: 1px solid var(--line-strong);
   margin-top: 2rem;
   padding-top: 1.5rem;
 }

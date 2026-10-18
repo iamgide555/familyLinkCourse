@@ -1,4 +1,7 @@
 import { Component, ElementRef, inject, OnInit, signal } from '@angular/core';
+import { HelpTipComponent } from '../../shared/help-tip.component';
+import { CitizenIdFieldComponent } from '../../shared/citizen-id-field.component';
+import { citizenIdProblems, normalizeCitizenId } from '../../shared/citizen-id';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiClient, ApiRequestError } from '../../core/api-client';
@@ -10,12 +13,12 @@ import type {
 import type { ServiceType, SettingsList } from '../../../../../../packages/contracts/src/settings';
 type TextField = Exclude<
   keyof StaffIntakeInput,
-  'householdSize' | 'householdEarners' | 'duplicateDecision' | 'requestedServiceIds' | 'provinceId' | 'districtId' | 'subdistrictId' | 'postcode'
+  'householdSize' | 'householdEarners' | 'noCitizenId' | 'duplicateDecision' | 'requestedServiceIds' | 'provinceId' | 'districtId' | 'subdistrictId' | 'postcode'
 >;
 type Field = { key: TextField; label: string; type?: string; hint?: string; max?: number };
 @Component({
   selector: 'fl-member-form',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, HelpTipComponent, CitizenIdFieldComponent],
   templateUrl: './member-form.component.html',
 })
 export class MemberFormComponent implements OnInit {
@@ -44,6 +47,9 @@ export class MemberFormComponent implements OnInit {
   caregiverLabel = '';
   duplicateReason = '';
   private expectedVersion: number | null = null;
+  /** A record that already had an ID number (or a reason) may not lose it; older records without either stay editable. */
+  private hadIdentity = false;
+  private hadBirthDate = false;
   readonly data: StaffIntakeInput = {
     firstName: '',
     lastName: '',
@@ -52,6 +58,8 @@ export class MemberFormComponent implements OnInit {
     email: '',
     memberType: '',
     citizenId: '',
+    noCitizenId: false,
+    citizenIdMissingReason: '',
     disabilityType: '',
     address: '',
     provinceId: '',
@@ -83,7 +91,7 @@ export class MemberFormComponent implements OnInit {
       key: 'birthDate',
       label: 'วันเกิด (ค.ศ.)',
       type: 'date',
-      hint: 'ใช้ปี ค.ศ. เช่น พ.ศ. 2500 คือ ค.ศ. 1957',
+      hint: 'ใช้ตรวจว่าเป็นคนเดียวกับสมาชิกเดิมหรือไม่ ใช้ปี ค.ศ. เช่น พ.ศ. 2500 คือ ค.ศ. 1957',
     },
     {
       key: 'phoneMobile',
@@ -92,15 +100,9 @@ export class MemberFormComponent implements OnInit {
       hint: 'เช่น 0812345678 ใช้เบอร์ร่วมกับคนในครอบครัวได้',
       max: 20,
     },
-    { key: 'email', label: 'อีเมล', type: 'email', max: 254 },
+    { key: 'email', label: 'อีเมล', type: 'email', hint: 'ใช้ส่งข้อความแจ้งเตือนสำรอง เมื่อส่งทาง LINE ไม่ได้ ไม่บังคับกรอก', max: 254 },
   ];
   readonly personal: Field[] = [
-    {
-      key: 'citizenId',
-      label: 'เลขบัตรประชาชน',
-      hint: '13 หลัก หากยังไม่มีข้อมูล ให้เว้นว่าง',
-      max: 20,
-    },
     { key: 'disabilityType', label: 'ประเภทความพิการ', max: 500 },
     { key: 'phoneHome', label: 'เบอร์โทรศัพท์บ้าน', type: 'tel', max: 20 },
     { key: 'facebook', label: 'Facebook', max: 300 },
@@ -154,6 +156,9 @@ export class MemberFormComponent implements OnInit {
       const member = await this.api.request<MemberRecord>(`/members/${this.id}`);
       for (const key of Object.keys(this.data) as (keyof StaffIntakeInput)[])
         Object.assign(this.data, { [key]: member[key as keyof MemberRecord] });
+      this.data.noCitizenId = !!member.citizenIdMissingReason;
+      this.hadIdentity = !!(member.citizenId || member.citizenIdMissingReason);
+      this.hadBirthDate = !!member.birthDate;
       this.expectedVersion = member.version;
       this.loaded.set(true);
       this.conflict.set(false);
@@ -231,6 +236,8 @@ export class MemberFormComponent implements OnInit {
     const errors: Record<string, string> = {};
     if (!this.data.firstName.trim()) errors['firstName'] = 'กรุณากรอกชื่อ';
     if (!this.data.lastName.trim()) errors['lastName'] = 'กรุณากรอกนามสกุล';
+    if (!this.data.birthDate && (!this.id || this.hadBirthDate)) errors['birthDate'] = 'กรุณากรอกวันเกิด ใช้ตรวจว่าเป็นคนเดียวกับสมาชิกเดิมหรือไม่';
+    Object.assign(errors, citizenIdProblems(this.data, !this.id || this.hadIdentity));
     if (createNew && !this.duplicateReason.trim())
       errors['duplicateReason'] = 'กรุณาระบุเหตุผลที่สร้างสมาชิกใหม่';
     for (const key of ['householdSize', 'householdEarners'] as const) {
@@ -247,6 +254,8 @@ export class MemberFormComponent implements OnInit {
     try {
       const input = {
         ...this.data,
+        citizenId: this.data.noCitizenId ? '' : normalizeCitizenId(this.data.citizenId ?? ''),
+        citizenIdMissingReason: this.data.noCitizenId ? (this.data.citizenIdMissingReason ?? '').trim() : '',
         ...(this.id ? { expectedVersion: this.expectedVersion } : {}),
         ...(createNew
           ? {

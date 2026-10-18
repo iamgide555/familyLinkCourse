@@ -1,3 +1,4 @@
+import { withIdentity, validCitizenId } from './helpers.js';
 import request from 'supertest';
 import { hash } from 'argon2';
 import { randomUUID } from 'node:crypto';
@@ -20,7 +21,7 @@ describe('staff paper intake and member search', () => {
       [method](path)
       .set('Cookie', cookie)
       .set('X-CSRF-Token', csrf)
-      .send(body);
+      .send(path === '/api/members' && method === 'post' ? withIdentity(body) : body);
   const get = (path: string) => request(ctx.app.getHttpServer()).get(path).set('Cookie', cookie);
   beforeAll(async () => {
     ctx = await createTestApp();
@@ -43,20 +44,68 @@ describe('staff paper intake and member search', () => {
     if (ctx) await ctx.close();
   });
 
-  it('saves an incomplete paper member without citizen ID and survives a profile reload', async () => {
+  it('saves a paper member with the other details left empty and survives a profile reload', async () => {
     const result = await send('/api/members', { firstName: 'ข้อมูลไม่ครบ', lastName: 'ทดสอบ' });
     expect(result.status).toBe(201);
     expect(result.body).toMatchObject({
       firstName: 'ข้อมูลไม่ครบ',
       source: 'paper',
       completeness: 'incomplete',
-      citizenId: '',
       signedFormAt: null,
     });
+    expect(result.body.citizenId).toMatch(/^\d{13}$/);
     expect(result.body.memberNumber).toMatch(/^FL\d{6,}$/);
     const profile = await get(`/api/members/${result.body.id}`);
     expect(profile.status).toBe(200);
     expect(profile.body.memberNumber).toBe(result.body.memberNumber);
+  });
+  it('requires an ID number, or a stated reason why there is none, for every new member', async () => {
+    const base = { firstName: 'ไม่มีเลขบัตร', lastName: 'ทดสอบ' };
+    const missing = await send('/api/members', { ...base, noCitizenId: false });
+    expect(missing.status).toBe(422);
+    expect(Object.keys(missing.body.fields)).toEqual(['citizenId']);
+    const noReason = await send('/api/members', { ...base, noCitizenId: true });
+    expect(noReason.status).toBe(422);
+    expect(Object.keys(noReason.body.fields)).toEqual(['citizenIdMissingReason']);
+    const badCheckDigit = await send('/api/members', { ...base, citizenId: '1234567890123' });
+    expect(badCheckDigit.status).toBe(422);
+    expect(badCheckDigit.body.fields.citizenId).toContain('ไม่ถูกต้อง');
+    const waived = await send('/api/members', { ...base, noCitizenId: true, citizenIdMissingReason: 'เด็กอายุต่ำกว่า 7 ปี ยังไม่มีบัตร' });
+    expect(waived.status).toBe(201);
+    expect(waived.body).toMatchObject({ citizenId: '', citizenIdMissingReason: 'เด็กอายุต่ำกว่า 7 ปี ยังไม่มีบัตร' });
+    const reload = await get(`/api/members/${waived.body.id}`);
+    expect(reload.body.citizenIdMissingReason).toBe('เด็กอายุต่ำกว่า 7 ปี ยังไม่มีบัตร');
+    // The reason is free text, so it is encrypted at rest like other intake details.
+    const row = await ctx.db.member.findUniqueOrThrow({ where: { organizationId_id: { organizationId: ctx.organizationId, id: waived.body.id } } });
+    expect(JSON.stringify(row.intakeEncrypted)).not.toContain('เด็กอายุต่ำกว่า');
+    // Giving a number later replaces the reason.
+    const fixed = await send(`/api/members/${waived.body.id}`, { ...base, citizenId: validCitizenId(), expectedVersion: waived.body.version }, 'patch');
+    expect(fixed.status).toBe(200);
+    expect(fixed.body.citizenIdMissingReason).toBe('');
+  });
+  it('requires a birth date for every new member, because name and birth date are how people are told apart', async () => {
+    const base = { firstName: 'ไม่มีวันเกิด', lastName: 'ทดสอบ', citizenId: validCitizenId() };
+    const missing = await send('/api/members', { ...base, birthDate: '' });
+    expect(missing.status).toBe(422);
+    expect(Object.keys(missing.body.fields)).toEqual(['birthDate']);
+    const ok = await send('/api/members', { ...base, birthDate: '1987-06-05' });
+    expect(ok.status).toBe(201);
+    // An older record without a birth date can still be edited; one that has a date cannot lose it.
+    const legacy = await ctx.db.member.create({ data: { organizationId: ctx.organizationId, firstName: 'เก่าไม่มีวันเกิด', lastName: 'ทดสอบ', normalizedFirstName: 'เก่าไม่มีวันเกิด', normalizedLastName: 'ทดสอบ', source: 'paper', memberNumber: 'FL990002' } });
+    expect((await send(`/api/members/${legacy.id}`, { firstName: 'เก่าไม่มีวันเกิด', lastName: 'ทดสอบ', phoneMobile: '0812223334', expectedVersion: legacy.version }, 'patch')).status).toBe(200);
+    const cleared = await send(`/api/members/${ok.body.id}`, { firstName: 'ไม่มีวันเกิด', lastName: 'ทดสอบ', birthDate: '', expectedVersion: ok.body.version }, 'patch');
+    expect(cleared.status).toBe(422);
+    expect(Object.keys(cleared.body.fields)).toEqual(['birthDate']);
+  });
+  it('lets an older record that never had an ID be edited, but not lose an ID it has', async () => {
+    const legacy = await ctx.db.member.create({ data: { organizationId: ctx.organizationId, firstName: 'ข้อมูลเก่า', lastName: 'ทดสอบ', normalizedFirstName: 'ข้อมูลเก่า', normalizedLastName: 'ทดสอบ', birthDate: '1960-02-02', source: 'paper', memberNumber: 'FL990001' } });
+    const edited = await send(`/api/members/${legacy.id}`, { firstName: 'ข้อมูลเก่า', lastName: 'ทดสอบ', phoneMobile: '0812223333', expectedVersion: legacy.version }, 'patch');
+    expect(edited.status).toBe(200);
+    const withId = await send('/api/members', { firstName: 'มีเลขแล้ว', lastName: 'ทดสอบ', noCitizenId: false, citizenId: validCitizenId() });
+    expect(withId.status).toBe(201);
+    const cleared = await send(`/api/members/${withId.body.id}`, { firstName: 'มีเลขแล้ว', lastName: 'ทดสอบ', citizenId: '', expectedVersion: withId.body.version }, 'patch');
+    expect(cleared.status).toBe(422);
+    expect(Object.keys(cleared.body.fields)).toEqual(['citizenId']);
   });
   it('same normalized name and birth date requires explicit staff choice and a recorded reason', async () => {
     const saved = await send('/api/members', input);
@@ -346,7 +395,7 @@ describe('staff paper intake and member search', () => {
     const actor = await ctx.db.user.findFirstOrThrow({ where: { organizationId: ctx.organizationId, email: 'intake@example.test' } });
     const members = ctx.app.get(Members);
     await expect(ctx.db.$transaction(async (tx) => {
-      await members.createPaper(tx, { kind: 'staff', organizationId: ctx.organizationId, userId: actor.id, role: 'staff', memberId: null }, { firstName: 'ย้อนธุรกรรม', lastName: 'ทดสอบ' });
+      await members.createPaper(tx, { kind: 'staff', organizationId: ctx.organizationId, userId: actor.id, role: 'staff', memberId: null }, { firstName: 'ย้อนธุรกรรม', lastName: 'ทดสอบ', citizenId: validCitizenId(), birthDate: '1980-01-01' });
       throw new Error('ROLLBACK_TEST');
     })).rejects.toThrow('ROLLBACK_TEST');
     expect(await ctx.db.member.count({ where: { organizationId: ctx.organizationId, firstName: 'ย้อนธุรกรรม' } })).toBe(0);

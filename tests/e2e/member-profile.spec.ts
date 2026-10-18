@@ -6,7 +6,7 @@ async function joined(browser: import('@playwright/test').Browser, id: string, f
   const response = await line.page.request.post('/api/member/signup', {
     headers: { 'x-dev-line-user-id': line.id },
     data: {
-      firstName: first, lastName: 'โปรไฟล์', birthDate: '1983-03-03', phoneMobile: '0811110000', memberType: 'caregiver', provinceId: 'กระบี่',
+      citizenId: citizenId(), firstName: first, lastName: 'โปรไฟล์', birthDate: '1983-03-03', phoneMobile: '0811110000', memberType: 'caregiver', provinceId: 'กระบี่',
       districtId: 'เกาะลันตา', requestedServiceIds: [(await (await line.page.request.get('/api/member/signup/options')).json()).services[0].id],
       registeringFor: 'self', privacyConsent: { version: 'v1', consentedBy: 'self', granted: true },
     },
@@ -31,7 +31,7 @@ test('a correction request changes the profile only after staff approve it', asy
   await expect(member.page.getByRole('button', { name: 'ขอแก้ไขข้อมูล' })).toHaveCount(0);
 
   await signIn(page);
-  await page.getByRole('link', { name: /รอตรวจสอบ/ }).click();
+  await goStaff(page, 'รอตรวจสอบ');
   const card = page.getByRole('article', { name: `คำขอแก้ไขของ แก้ไข${id} โปรไฟล์` });
   await expect(card.getByRole('cell', { name: '0811110000' })).toBeVisible();
   await expect(card.getByRole('cell', { name: '0899998888' })).toBeVisible();
@@ -68,6 +68,8 @@ test('a staff-issued QR links a paper member to a LINE account exactly once', as
   await goStaff(page, 'เพิ่มสมาชิกจากใบสมัคร');
   await page.getByLabel('ชื่อ', { exact: true }).fill(`คิวอาร์${id}`);
   await page.getByLabel('นามสกุล', { exact: true }).fill('กระดาษ');
+  await page.getByLabel('วันเกิด (ค.ศ.)', { exact: true }).fill('1985-05-05');
+  await page.getByLabel('เลขบัตรประชาชน', { exact: true }).fill(citizenId());
   await page.getByRole('button', { name: 'บันทึกสมาชิก', exact: true }).click();
   await expect(page.getByRole('heading', { name: `คิวอาร์${id} กระดาษ` })).toBeVisible();
   // The QR appears by itself right after a new paper member is saved.
@@ -103,6 +105,8 @@ test('staff receive a document, admins alone can open it, and nothing links dire
   await goStaff(page, 'เพิ่มสมาชิกจากใบสมัคร');
   await page.getByLabel('ชื่อ', { exact: true }).fill(`เอกสาร${id}`);
   await page.getByLabel('นามสกุล', { exact: true }).fill('แนบไฟล์');
+  await page.getByLabel('วันเกิด (ค.ศ.)', { exact: true }).fill('1985-05-05');
+  await page.getByLabel('เลขบัตรประชาชน', { exact: true }).fill(citizenId());
   await page.getByRole('button', { name: 'บันทึกสมาชิก', exact: true }).click();
   await expect(page.getByRole('heading', { name: `เอกสาร${id} แนบไฟล์` })).toBeVisible();
   await page.getByLabel(/เลือกไฟล์/).setInputFiles({ name: 'scan.png', mimeType: 'image/png', buffer: tinyPng });

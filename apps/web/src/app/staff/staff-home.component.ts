@@ -70,6 +70,7 @@ import type { TierRecord } from '../../../../../packages/contracts/src/membershi
               [routerLink]="['/staff/members', member.id]"
               [attr.aria-label]="'เปิดข้อมูล ' + member.firstName + ' ' + member.lastName"
             >
+              <span class="avatar" [class]="'avatar ' + tone(member.id)" aria-hidden="true">{{ member.firstName.charAt(0) }}</span>
               <span class="result-person"
                 ><strong>{{ member.firstName }} {{ member.lastName }}</strong
                 ><span>เลขสมาชิก {{ member.memberNumber }}</span></span
@@ -120,6 +121,7 @@ export class StaffHomeComponent implements OnInit {
     try { this.tiers.set((await this.api.request<{ items: TierRecord[] }>('/membership-tiers')).items); } catch { /* filters still work for general */ }
     void this.search(1);
   }
+  tone(id: string) { let n = 0; for (const c of id) n += c.charCodeAt(0); return 'tone-' + (n % 6); }
   private rerun = false;
   async search(page: number) {
     // A filter changed while a search was running: run once more with the newest values instead of dropping it.

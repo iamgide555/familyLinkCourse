@@ -16,7 +16,7 @@ import { findCandidates } from '../members/members.repository.js';
 import { hashToken } from './invites.service.js';
 
 type RecordedConsent = ConsentInput & { purpose: 'privacy' | 'sensitive_upload' | 'news' | 'photo'; granted: boolean; createdAt: string };
-const ONLINE_FIELDS = new Set(['inviteToken','draftId','draftToken','firstName','lastName','birthDate','phoneMobile','email','memberType','provinceId','districtId','requestedServiceIds','registeringFor','relationship','caregiverMemberId','privacyConsent','newsConsent','photoConsent']);
+const ONLINE_FIELDS = new Set(['inviteToken','draftId','draftToken','firstName','lastName','birthDate','phoneMobile','email','citizenId','noCitizenId','citizenIdMissingReason','memberType','provinceId','districtId','requestedServiceIds','registeringFor','relationship','caregiverMemberId','privacyConsent','newsConsent','photoConsent']);
 function validConsent(value: ConsentInput | undefined, required: boolean): boolean {
   if (!value) return !required;
   return typeof value.version === 'string' && value.version.trim().length > 0 &&
@@ -48,7 +48,11 @@ export class Signup {
       !validConsent(input.privacyConsent, true) ||
       !validConsent(input.newsConsent, false) || !validConsent(input.photoConsent, false))
       throw new AppError(422, 'INVALID_INPUT', 'กรุณากรอกข้อมูลสมัครและยินยอมให้ครบ');
-    validateIntake({ ...input, caregiverRelationship: input.relationship ?? '' }, this.clock.now());
+    if (typeof input.citizenId === 'string') input.citizenId = input.citizenId.replace(/[\s-]/g, '');
+    if (input.citizenId === undefined || typeof input.citizenId !== 'string') input.citizenId = '';
+    if (input.noCitizenId !== undefined && typeof input.noCitizenId !== 'boolean' || (input.citizenIdMissingReason !== undefined && typeof input.citizenIdMissingReason !== 'string'))
+      throw new AppError(422, 'INVALID_INPUT', 'กรุณาตรวจสอบเลขบัตรประชาชน');
+    validateIntake({ ...input, caregiverRelationship: input.relationship ?? '' }, this.clock.now(), { requireCitizenId: true });
     this.references.validateAddress(input);
     if (!input.birthDate || !input.phoneMobile || !input.firstName || !input.lastName ||
       !/^0[689]\d{8}$/.test(input.phoneMobile) ||
@@ -75,6 +79,9 @@ export class Signup {
   }
   private async createMember(tx: Tx, orgId: string, input: SignupInput, lineAccountId: string | null, source: 'line' | 'invite', consents: RecordedConsent[], duplicateReason?: string) {
     const normalized = normalizeName(input);
+    const citizenIdHash = input.citizenId ? this.crypto.citizenIdIndex(orgId, input.citizenId) : null;
+    if (citizenIdHash && await tx.member.findFirst({ where: { organizationId: orgId, citizenIdHash } }))
+      throw new AppError(409, 'CITIZEN_ID_EXISTS', 'เลขบัตรประชาชนนี้มีข้อมูลแล้ว กรุณาเชื่อมกับสมาชิกเดิม');
     const organization = await tx.organization.update({ where: { id: orgId }, data: { memberSequence: { increment: 1 } } });
     const member = await tx.member.create({ data: {
       organizationId: orgId,
@@ -85,7 +92,8 @@ export class Signup {
       normalizedFirstName: normalized.firstName, normalizedLastName: normalized.lastName,
       birthDate: input.birthDate, phoneMobile: input.phoneMobile, email: input.email ?? '',
       caregiverMemberId: input.caregiverMemberId ?? null,
-      intakeEncrypted: this.crypto.encrypt(JSON.stringify({memberType: input.memberType, provinceId: input.provinceId, districtId: input.districtId, requestedServiceIds: input.requestedServiceIds, caregiverRelationship: input.relationship ?? ''})),
+      citizenIdHash,
+      intakeEncrypted: this.crypto.encrypt(JSON.stringify({citizenId: input.citizenId ?? '', citizenIdMissingReason: input.citizenId ? '' : (input.citizenIdMissingReason ?? '').trim(), memberType: input.memberType, provinceId: input.provinceId, districtId: input.districtId, requestedServiceIds: input.requestedServiceIds, caregiverRelationship: input.relationship ?? ''})),
       ...(duplicateReason ? {duplicateReviewReason: this.crypto.encrypt(duplicateReason)} : {}),
     } });
     await tx.memberServiceInterest.createMany({ data: input.requestedServiceIds.map((serviceTypeId) => ({ organizationId: orgId, memberId: member.id, serviceTypeId })) });
@@ -126,7 +134,11 @@ export class Signup {
         await tx.signupDraft.update({ where: { organizationId_id: { organizationId: orgId, id: draft.id } }, data: { consumedAt: this.clock.now() } });
       }
       const consents = this.recorded(input, uploadConsent);
-      const matches = await findCandidates(tx, orgId, input, input.birthDate);
+      const byName = await findCandidates(tx, orgId, input, input.birthDate);
+      const byId = input.citizenId
+        ? await tx.member.findMany({ where: { organizationId: orgId, deletedAt: null, citizenIdHash: this.crypto.citizenIdIndex(orgId, input.citizenId) } })
+        : [];
+      const matches = [...byName, ...byId.filter((m) => !byName.some((n) => n.id === m.id))];
       let result: SignupResult;
       if (matches.length) {
         const request = await tx.signupRequest.create({ data: {

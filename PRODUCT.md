@@ -52,7 +52,7 @@
 ## Evidence on Hand
 
 - **Behavior:** current system spec and milestone plans.
-- **Visual reference:** existing `prototype/` screens, local Sarabun/Kanit fonts, `docs/archives/DESIGN.md` and current `.impeccable/design.json`; historical prototype requirements do not override current product scope.
+- **Visual reference:** archived `docs/archives/prototype/` screens, local Sarabun/Kanit fonts, `docs/archives/DESIGN.md` and current `.impeccable/design.json`; historical prototype requirements do not override current product scope.
 - **Data:** use synthetic fixtures only during development. Do not fabricate real members, course counts, organization claims or availability.
 
 ---

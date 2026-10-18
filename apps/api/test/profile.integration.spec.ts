@@ -1,3 +1,4 @@
+import { validCitizenId } from './helpers.js';
 import request from 'supertest';
 import { hash } from 'argon2';
 import { createTestApp, type TestApp } from './test-app.js';
@@ -23,7 +24,7 @@ describe('profile correction requests', () => {
   };
   const join = async (lineId: string, first: string, last: string, birthDate: string) => {
     const response = await http().post('/api/member/signup').set(line(lineId)).send({
-      firstName: first, lastName: last, birthDate, phoneMobile: '0812345678', memberType: 'caregiver', provinceId: 'กระบี่',
+      citizenId: validCitizenId(), firstName: first, lastName: last, birthDate, phoneMobile: '0812345678', memberType: 'caregiver', provinceId: 'กระบี่',
       districtId: 'เกาะลันตา', requestedServiceIds: [serviceTypeId], registeringFor: 'self', privacyConsent: consent,
     });
     expect(response.body.kind).toBe('created');
@@ -138,7 +139,7 @@ describe('participant membership view', () => {
   afterAll(async () => { if (ctx) await ctx.close(); });
   it('shows tier and expiry read-only, and nothing else from the staff-managed record', async () => {
     const service = (await ctx.db.serviceType.create({ data: { organizationId: ctx.organizationId, name: 'บริการสมาชิกภาพ' } })).id;
-    const response = await request(ctx.app.getHttpServer()).post('/api/member/signup').set('x-dev-line-user-id', 'synthetic-tier-view').send({ firstName: 'ดูสมาชิกภาพ', lastName: 'ทดสอบ', birthDate: '1980-01-01', phoneMobile: '0812345678', memberType: 'caregiver', provinceId: 'กระบี่', districtId: 'เกาะลันตา', requestedServiceIds: [service], registeringFor: 'self', privacyConsent: consent });
+    const response = await request(ctx.app.getHttpServer()).post('/api/member/signup').set('x-dev-line-user-id', 'synthetic-tier-view').send({ citizenId: validCitizenId(), firstName: 'ดูสมาชิกภาพ', lastName: 'ทดสอบ', birthDate: '1980-01-01', phoneMobile: '0812345678', memberType: 'caregiver', provinceId: 'กระบี่', districtId: 'เกาะลันตา', requestedServiceIds: [service], registeringFor: 'self', privacyConsent: consent });
     const before = await request(ctx.app.getHttpServer()).get(`/api/member/me/${response.body.memberId}`).set('x-dev-line-user-id', 'synthetic-tier-view');
     expect(before.body.membership).toEqual({ status: 'general', tierName: 'สมาชิกทั่วไป', expiresAt: null });
     const tier = await ctx.db.membershipTier.create({ data: { organizationId: ctx.organizationId, name: 'สมาชิกสามัญ', fee: '500', durationMonths: 12 } });

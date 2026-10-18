@@ -1,4 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { HelpTipComponent } from '../../shared/help-tip.component';
+import { CitizenIdFieldComponent } from '../../shared/citizen-id-field.component';
+import { citizenIdProblems, normalizeCitizenId } from '../../shared/citizen-id';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import QRCode from 'qrcode';
@@ -13,7 +16,7 @@ import { QuestionFormComponent } from '../../shared/question-form.component';
 
 @Component({
   selector: 'fl-walkin',
-  imports: [FormsModule, RouterLink, QuestionFormComponent],
+  imports: [FormsModule, RouterLink, QuestionFormComponent, CitizenIdFieldComponent, HelpTipComponent],
   template: `<main id="main-content" class="member-workspace">
     <a class="back-link" [routerLink]="['/staff/runs', runId]">กลับไปหน้ารอบ</a>
     <h1>รับลงทะเบียนหน้างาน{{ course() ? ' · ' + course()!.name : '' }}</h1>
@@ -52,10 +55,11 @@ import { QuestionFormComponent } from '../../shared/question-form.component';
               @else if (found().length) { <ul class="choice-list">@for (m of found(); track m.id) { <li><span>{{ m.firstName }} {{ m.lastName }} · {{ m.memberNumber }} · {{ m.phoneMobile || 'ไม่มีเบอร์' }}</span><button class="button-secondary" type="button" (click)="picked.set(m)">เลือกคนนี้</button></li> }</ul> }
             } @else {
               <div class="form-grid">
-                <div class="intake-field"><label for="w-first">ชื่อ</label><input id="w-first" name="first" [(ngModel)]="nm.firstName" /></div>
-                <div class="intake-field"><label for="w-last">นามสกุล</label><input id="w-last" name="last" [(ngModel)]="nm.lastName" /></div>
-                <div class="intake-field"><label for="w-birth">วันเกิด (ไม่บังคับ แต่ช่วยตรวจว่าซ้ำกับสมาชิกเดิม)</label><input id="w-birth" name="birth" type="date" [(ngModel)]="nm.birthDate" /></div>
+                <div class="intake-field"><div class="label-row"><label for="w-first">ชื่อ</label><span class="req-badge">จำเป็น</span></div><input id="w-first" name="first" [(ngModel)]="nm.firstName" /></div>
+                <div class="intake-field"><div class="label-row"><label for="w-last">นามสกุล</label><span class="req-badge">จำเป็น</span></div><input id="w-last" name="last" [(ngModel)]="nm.lastName" /></div>
+                <div class="intake-field"><div class="label-row"><label for="w-birth">วันเกิด</label><span class="req-badge">จำเป็น</span><fl-help-tip tipId="w-birth-hint" text="ใช้ตรวจว่าเป็นคนเดียวกับสมาชิกเดิมหรือไม่ ใช้ปี ค.ศ." /></div><input id="w-birth" name="birth" type="date" [(ngModel)]="nm.birthDate" aria-describedby="w-birth-hint" /></div>
                 <div class="intake-field"><label for="w-phone">เบอร์มือถือ</label><input id="w-phone" name="phone" type="tel" inputmode="numeric" [(ngModel)]="nm.phoneMobile" /></div>
+                <fl-citizen-id-field [model]="nm" [errors]="fieldErrors()" prefix="w-" />
               </div>
               <p class="field-hint">ข้อมูลที่เหลือกรอกเพิ่มได้ภายหลังจากหน้าโปรไฟล์สมาชิก</p>
               @if (duplicate()) {
@@ -117,7 +121,7 @@ export class WalkinComponent implements OnInit {
   kind: 'existing' | 'new' = 'new';
   currentId = '';
   q = '';
-  nm = { firstName: '', lastName: '', birthDate: '', phoneMobile: '' };
+  nm = { firstName: '', lastName: '', birthDate: '', phoneMobile: '', citizenId: '', noCitizenId: false, citizenIdMissingReason: '' };
   answers: Answers = {};
   dupReason = ''; closedReason = ''; bypassReason = ''; capReason = ''; newCapacity: number | null = null;
   private op = crypto.randomUUID();
@@ -153,20 +157,24 @@ export class WalkinComponent implements OnInit {
   onSession() { this.others.set([]); }
   toggleOther(id: string) { this.others.update((o) => (o.includes(id) ? o.filter((x) => x !== id) : [...o, id])); }
   async search() { try { this.found.set((await this.api.request<MemberSearchResult>(`/members?q=${encodeURIComponent(this.q.trim())}&page=1`)).items); } catch (e) { this.errors.set([errorText(e)]); } }
-  again() { this.result.set(null); this.picked.set(null); this.found.set([]); this.nm = { firstName: '', lastName: '', birthDate: '', phoneMobile: '' }; this.answers = {}; this.dupReason = this.closedReason = this.bypassReason = this.capReason = ''; this.newCapacity = null; this.duplicate.set(false); this.op = crypto.randomUUID(); void this.refreshAll(); }
+  again() { this.result.set(null); this.picked.set(null); this.found.set([]); this.nm = { firstName: '', lastName: '', birthDate: '', phoneMobile: '', citizenId: '', noCitizenId: false, citizenIdMissingReason: '' }; this.answers = {}; this.dupReason = this.closedReason = this.bypassReason = this.capReason = ''; this.newCapacity = null; this.duplicate.set(false); this.op = crypto.randomUUID(); void this.refreshAll(); }
   private async refreshAll() { this.run.set(await this.api.request<RunRecord>(`/runs/${this.runId}`)); await this.loadRegs(); }
   async submit() {
     if (this.busy()) return;
     const problems: string[] = [];
     if (this.kind === 'existing' && !this.picked()) problems.push('กรุณาค้นหาและเลือกสมาชิก');
     if (this.kind === 'new' && (!this.nm.firstName.trim() || !this.nm.lastName.trim())) problems.push('กรุณากรอกชื่อและนามสกุล');
+    if (this.kind === 'new' && !this.nm.birthDate) problems.push('กรุณากรอกวันเกิด');
+    const idErrors = this.kind === 'new' ? citizenIdProblems(this.nm, true) : {};
+    problems.push(...Object.values(idErrors));
+    this.fieldErrors.set(idErrors);
     this.errors.set(problems);
     if (problems.length) { focusSoon('walkin-errors'); return; }
     const r = this.run()!;
     const pool = r.perSessionRegistration ? this.currentId : null;
     const body: Record<string, unknown> = {
       operationKey: this.op, currentSessionId: this.currentId, sessionIds: r.perSessionRegistration ? this.others() : [], answers: this.answers,
-      ...(this.kind === 'existing' ? { memberId: this.picked()!.id } : { member: { firstName: this.nm.firstName.trim(), lastName: this.nm.lastName.trim(), ...(this.nm.birthDate ? { birthDate: this.nm.birthDate } : {}), ...(this.nm.phoneMobile.trim() ? { phoneMobile: this.nm.phoneMobile.trim() } : {}), ...(this.duplicate() ? { duplicateDecision: 'create_new', duplicateReason: this.dupReason.trim() } : {}) } }),
+      ...(this.kind === 'existing' ? { memberId: this.picked()!.id } : { member: { firstName: this.nm.firstName.trim(), lastName: this.nm.lastName.trim(), ...(this.nm.noCitizenId ? { noCitizenId: true, citizenIdMissingReason: this.nm.citizenIdMissingReason.trim() } : { citizenId: normalizeCitizenId(this.nm.citizenId) }), ...(this.nm.birthDate ? { birthDate: this.nm.birthDate } : {}), ...(this.nm.phoneMobile.trim() ? { phoneMobile: this.nm.phoneMobile.trim() } : {}), ...(this.duplicate() ? { duplicateDecision: 'create_new', duplicateReason: this.dupReason.trim() } : {}) } }),
       ...(this.closedReason.trim() ? { closedReason: this.closedReason.trim() } : {}),
       ...(this.bypassReason.trim() ? { queueBypassReason: this.bypassReason.trim() } : {}),
       ...(this.newCapacity && this.capReason.trim() ? { capacityIncrease: [{ sessionId: pool, newCapacity: Number(this.newCapacity), reason: this.capReason.trim() }] } : {}),

@@ -16,13 +16,10 @@ import { STATUS_WORD, errorText, shortDate, thaiDateTime } from '../shared/thai'
     @else if (!items().length && !error()) {
       <div class="empty-state"><h2>ยังไม่มีการลงทะเบียน</h2><p>เลือกคอร์สที่สนใจได้ที่เมนู “ลงทะเบียนคอร์ส”</p><a class="button-primary" routerLink="/member/courses">ดูคอร์สที่เปิดรับ</a></div>
     }
-    @for (r of items(); track r.id; let i = $index) {
-      <article class="review-item ticket-stubbed" [attr.aria-label]="r.courseName + ' ของ ' + r.memberName">
-        <div class="stub" aria-hidden="true"><span class="stub-label">ใบที่</span><span class="stub-num">{{ i + 1 }}</span></div>
-        <div class="ticket-body">
+    @for (r of items(); track r.id) {
+      <article class="review-item" [attr.aria-label]="r.courseName + ' ของ ' + r.memberName">
         <h2>{{ r.courseName }}</h2>
         <p class="record-state">{{ r.batchName }} · ลงทะเบียนให้ {{ r.memberName }}</p>
-        <div class="tear" aria-hidden="true"></div>
         <ul class="entry-list">
           @for (e of r.entries; track $index) {
             <li><span><strong>{{ e.sessionId ? 'วันที่ ' + e.dayNo + ' · ' + date(e.date!) : 'ทั้งคอร์ส' }}</strong><span class="dash"> — </span><span class="pill" [attr.data-status]="e.status">{{ word(e.status) }}{{ e.queuePosition ? ' (คิวที่ ' + e.queuePosition + ')' : '' }}</span>{{ e.sessionStatus === 'cancelled' ? ' · วันเรียนถูกยกเลิกโดยสมาคม' : '' }}</span>
@@ -38,7 +35,6 @@ import { STATUS_WORD, errorText, shortDate, thaiDateTime } from '../shared/thai'
           <p class="field-hint">{{ r.canSelfCancel ? 'ยกเลิกเองได้ถึง ' + (r.cancelDeadline ? dateTime(r.cancelDeadline) : '') : 'เลยกำหนดยกเลิกเองแล้ว ติดต่อเจ้าหน้าที่เพื่อยกเลิก' }}</p>
         }
         @if (r.unsigned) { <p class="field-hint">เจ้าหน้าที่จะให้ลงนามแบบฟอร์มกระดาษเมื่อมาที่สมาคม ไม่กระทบสิทธิ์ลงทะเบียน</p> }
-        </div>
       </article>
     }
   </main>`,

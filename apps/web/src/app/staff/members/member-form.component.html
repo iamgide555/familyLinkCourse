@@ -2,7 +2,7 @@
   <a class="back-link" routerLink="/staff">กลับไปหน้ารายชื่อ</a>
   <h1>{{ id ? 'แก้ไขข้อมูลสมาชิก' : 'เพิ่มสมาชิกจากใบสมัคร' }}</h1>
   <p class="page-intro">
-    กรอกชื่อและนามสกุลก่อน ช่องอื่นเติมภายหลังได้ ข้อมูลจะบันทึกเมื่อกดปุ่มด้านล่าง
+    กรอกช่องที่มีป้าย “จำเป็น” ก่อน ช่องอื่นเติมภายหลังได้ ข้อมูลจะบันทึกเมื่อกดปุ่มด้านล่าง
   </p>
   @if (error()) {
     <div role="alert" class="notice notice-error">{{ error() }}</div>
@@ -28,10 +28,11 @@
           <div class="form-grid">
             @for (field of basic; track field.key) {
               <div class="intake-field">
-                <label [for]="field.key">{{ field.label }}</label>
-                @if (field.hint) {
-                  <p class="field-hint" [id]="field.key + '-hint'">{{ field.hint }}</p>
-                }
+                <div class="label-row">
+                  <label [for]="field.key">{{ field.label }}</label>
+                  @if (field.key === 'firstName' || field.key === 'lastName' || field.key === 'birthDate') { <span class="req-badge">จำเป็น</span> }
+                  @if (field.hint) { <fl-help-tip [tipId]="field.key + '-hint'" [text]="field.hint" /> }
+                </div>
                 <input
                   [id]="field.key"
                   [name]="field.key"
@@ -64,6 +65,7 @@
                 <option value="at_risk">ผู้มีแนวโน้มจะพิการ</option>
               </select>
             </div>
+            <fl-citizen-id-field [model]="data" [errors]="fieldErrors()" />
           </div>
         </section>
         <details class="intake-section" aria-labelledby="personal-title">
@@ -132,10 +134,10 @@
           <div class="form-grid">
             @for (field of personal; track field.key) {
               <div class="intake-field">
-                <label [for]="field.key">{{ field.label }}</label>
-                @if (field.hint) {
-                  <p class="field-hint" [id]="field.key + '-hint'">{{ field.hint }}</p>
-                }
+                <div class="label-row">
+                  <label [for]="field.key">{{ field.label }}</label>
+                  @if (field.hint) { <fl-help-tip [tipId]="field.key + '-hint'" [text]="field.hint" /> }
+                </div>
                 <input
                   [id]="field.key"
                   [name]="field.key"
@@ -263,10 +265,10 @@
           <div class="form-grid">
             @for (field of contacts; track field.key) {
               <div class="intake-field">
-                <label [for]="field.key">{{ field.label }}</label>
-                @if (field.hint) {
-                  <p class="field-hint" [id]="field.key + '-hint'">{{ field.hint }}</p>
-                }
+                <div class="label-row">
+                  <label [for]="field.key">{{ field.label }}</label>
+                  @if (field.hint) { <fl-help-tip [tipId]="field.key + '-hint'" [text]="field.hint" /> }
+                </div>
                 <input
                   [id]="field.key"
                   [name]="field.key"

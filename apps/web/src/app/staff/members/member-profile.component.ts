@@ -41,6 +41,7 @@ type Row = { label: string; value: string; full?: boolean };
       </div>
       <ul class="status-chips" aria-label="สรุปสถานะสมาชิก">
         <li [class.chip-warn]="!member.signedFormAt" [class.chip-ok]="!!member.signedFormAt"><span class="chip-label">แบบฟอร์มลงนาม</span><span class="chip-value">{{ member.signedFormAt ? 'ได้รับเอกสารลงนามแล้ว' : 'ยังไม่ได้ลงนาม' }}</span></li>
+        <li [class.chip-ok]="!!member.citizenId" [class.chip-warn]="!member.citizenId"><span class="chip-label">เลขบัตรประชาชน</span><span class="chip-value">{{ member.citizenId ? 'กรอกแล้ว' : member.citizenIdMissingReason ? 'ไม่มีเลขบัตร' : 'ยังไม่ได้กรอก' }}</span></li>
         <li [class.chip-ok]="member.lineLinked"><span class="chip-label">LINE</span><span class="chip-value">{{ member.lineLinked ? 'เชื่อมต่อ LINE แล้ว' : 'ยังไม่เชื่อมต่อ LINE' }}</span></li>
         <li><span class="chip-label">ที่มาของข้อมูล</span><span class="chip-value">{{ member.source === 'paper' ? 'บันทึกจากใบสมัครกระดาษ' : member.source === 'line' ? 'สมัครผ่าน LINE' : member.source === 'invite' ? 'สมัครผ่านลิงก์เชิญ' : 'ลงทะเบียนหน้างาน' }}</span></li>
       </ul>
@@ -105,7 +106,6 @@ export class MemberProfileComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private loadRequest = 0;
   readonly fields: Array<{ key: keyof MemberRecord; label: string }> = [
-    { key: 'citizenId', label: 'เลขบัตรประชาชน' },
     { key: 'disabilityType', label: 'ประเภทความพิการ' },
     { key: 'phoneHome', label: 'เบอร์โทรศัพท์บ้าน' },
     { key: 'facebook', label: 'Facebook' },
@@ -151,6 +151,7 @@ export class MemberProfileComponent implements OnInit {
       { label: 'วันเกิด', value: this.date(member.birthDate) },
       { label: 'เบอร์มือถือ', value: member.phoneMobile || 'ยังไม่ระบุ' },
       { label: 'อีเมล', value: member.email || 'ยังไม่ระบุ' },
+      { label: 'เลขบัตรประชาชน', value: member.citizenId || (member.citizenIdMissingReason ? 'ไม่มีเลขบัตรประชาชน · ' + member.citizenIdMissingReason : 'ยังไม่ได้กรอก') },
       { label: 'ประเภทสมาชิก', value: member.memberType === 'caregiver' ? 'ผู้ดูแล' : member.memberType === 'disabled' ? 'คนพิการ' : member.memberType === 'at_risk' ? 'ผู้มีแนวโน้มจะพิการ' : 'ยังไม่ระบุ' },
     ];
     const missing: string[] = [];

@@ -54,13 +54,13 @@ const LABEL: Record<EditableProfileField, string> = {
                 <textarea [id]="'reason-' + item.id" [name]="'reason-' + item.id" rows="2" [(ngModel)]="reason"></textarea>
               </div>
               <div class="form-actions">
-                <button class="button-primary" type="button" [disabled]="busy() || !reason.trim()" (click)="decide(item, { decision: openKind(), reason: reason.trim() })">ยืนยัน{{ openKind() === 'create_new' ? 'สร้างสมาชิกใหม่' : 'ปฏิเสธ' }}</button>
+                <button [class]="openKind() === 'reject' ? 'button-danger' : 'button-primary'" type="button" [disabled]="busy() || !reason.trim()" (click)="decide(item, { decision: openKind(), reason: reason.trim() })">ยืนยัน{{ openKind() === 'create_new' ? 'สร้างสมาชิกใหม่' : 'ปฏิเสธ' }}</button>
                 <button class="button-secondary" type="button" (click)="open.set('')">ยกเลิก</button>
               </div>
             } @else {
               <div class="form-actions">
                 <button class="button-secondary" type="button" [disabled]="busy()" (click)="ask(item.id, 'create_new')">เป็นคนละคน สร้างสมาชิกใหม่</button>
-                <button class="button-secondary" type="button" [disabled]="busy()" (click)="ask(item.id, 'reject')">ปฏิเสธใบสมัคร</button>
+                <button class="button-danger-outline" type="button" [disabled]="busy()" (click)="ask(item.id, 'reject')">ปฏิเสธใบสมัคร</button>
               </div>
             }
           </article>
@@ -81,7 +81,7 @@ const LABEL: Record<EditableProfileField, string> = {
             </table>
             <div class="form-actions">
               <button class="button-primary" type="button" [disabled]="busy()" (click)="review(c, true)">อนุมัติ</button>
-              <button class="button-secondary" type="button" [disabled]="busy()" (click)="review(c, false)">ไม่อนุมัติ</button>
+              <button class="button-danger-outline" type="button" [disabled]="busy()" (click)="review(c, false)">ไม่อนุมัติ</button>
             </div>
           </article>
         }

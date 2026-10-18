@@ -1,6 +1,6 @@
 import { createTestApp, type TestApp } from './test-app.js';
 import { Walkins } from '../src/bookings/walkins.service.js';
-import { http, joinLine, key, lineHeader, login, makeRun, paperMember, register, serviceType, session, staffCaller } from './helpers.js';
+import { http, joinLine, key, lineHeader, login, makeRun, paperMember, register, serviceType, session, staffCaller, validCitizenId, validBirthDate } from './helpers.js';
 
 describe('walk-in intake, booking and attendance in one operation', () => {
   let ctx: TestApp;
@@ -9,7 +9,7 @@ describe('walk-in intake, booking and attendance in one operation', () => {
   const today = '2026-10-17';
   const open = '2026-12-01T00:00:00.000Z';
   let seq = 0;
-  const newMember = (extra: object = {}) => ({ firstName: `หน้างาน${++seq}`, lastName: 'ทดสอบ', phoneMobile: '0811112222', ...extra });
+  const newMember = (extra: object = {}) => ({ firstName: `หน้างาน${++seq}`, lastName: 'ทดสอบ', phoneMobile: '0811112222', citizenId: validCitizenId(), birthDate: validBirthDate(), ...extra });
   const admit = (runId: string, body: object) => s('post', `/api/runs/${runId}/walkins`, { operationKey: key(), ...body });
   const attendanceOf = (sessionId: string) => ctx.db.attendance.findMany({ where: { sessionId } });
   beforeAll(async () => {
@@ -19,6 +19,19 @@ describe('walk-in intake, booking and attendance in one operation', () => {
   });
   afterAll(async () => { if (ctx) await ctx.close(); });
 
+  it('does not create a walk-in member without an ID number or a stated reason', async () => {
+    const { runId, sessionIds } = await makeRun(ctx, s, { capacity: 3, sessions: [session(today)] });
+    const { citizenId: _unused, ...withoutId } = newMember();
+    void _unused;
+    const missing = await admit(runId, { currentSessionId: sessionIds[0], sessionIds: [], member: withoutId });
+    expect(missing.status).toBe(422);
+    expect(missing.body.fields.citizenId).toBeDefined();
+    const noBirth = await admit(runId, { currentSessionId: sessionIds[0], sessionIds: [], member: { ...newMember(), birthDate: '' } });
+    expect(noBirth.status).toBe(422);
+    expect(noBirth.body.fields.birthDate).toBeDefined();
+    const waived = await admit(runId, { currentSessionId: sessionIds[0], sessionIds: [], member: { ...withoutId, noCitizenId: true, citizenIdMissingReason: 'ไม่ได้นำบัตรมา' }, closedReason: 'ปิดรับแล้วแต่มาถึงหน้างาน' });
+    expect(waived.status).toBe(201);
+  });
   it('confirms after registration closed, marks only today as present, and hands over a link QR', async () => {
     const { runId, sessionIds } = await makeRun(ctx, s, { perSession: true, capacity: 5, requireApproval: true, closes: '2026-10-16T00:00:00.000Z', sessions: [session(today, { capacity: 5 }), session('2026-10-18', { capacity: 5 })] });
     const member = newMember();
@@ -172,7 +185,7 @@ describe('walk-in intake, booking and attendance in one operation', () => {
   it('still applies the duplicate-person check to walk-in intake', async () => {
     const { runId, sessionIds } = await makeRun(ctx, s, { capacity: 5, closes: open, sessions: [session(today)] });
     const existing = await paperMember(ctx, 'ซ้ำหน้างาน', '1995-05-05');
-    const dup = await admit(runId, { currentSessionId: sessionIds[0], sessionIds: [], member: { firstName: existing.firstName, lastName: existing.lastName, birthDate: '1995-05-05' } });
+    const dup = await admit(runId, { currentSessionId: sessionIds[0], sessionIds: [], member: { firstName: existing.firstName, lastName: existing.lastName, birthDate: '1995-05-05', citizenId: validCitizenId() } });
     expect([dup.status, dup.body.code]).toEqual([409, 'MEMBER_REVIEW_REQUIRED']);
     expect(await ctx.db.registration.count({ where: { runId } })).toBe(0);
   });

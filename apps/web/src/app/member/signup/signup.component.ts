@@ -1,4 +1,7 @@
 import { Component, ElementRef, Injector, OnInit, afterNextRender, inject, signal, viewChild } from '@angular/core';
+import { HelpTipComponent } from '../../shared/help-tip.component';
+import { CitizenIdFieldComponent } from '../../shared/citizen-id-field.component';
+import { citizenIdProblems, normalizeCitizenId } from '../../shared/citizen-id';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ApiRequestError } from '../../core/api-client';
@@ -14,7 +17,7 @@ const MAX_BYTES = 10_000_000;
 
 @Component({
   selector: 'fl-member-signup',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, HelpTipComponent, CitizenIdFieldComponent],
   template: `<main id="main-content" class="member-workspace line-page">
     @if (result(); as done) {
       <div class="outcome" role="status" tabindex="-1" #outcome>
@@ -38,7 +41,7 @@ const MAX_BYTES = 10_000_000;
       <p role="status">กำลังเตรียมแบบฟอร์ม…</p>
     } @else {
       <h1>{{ addAnother() ? 'เพิ่มสมาชิกในครอบครัว' : 'สมัครสมาชิก FamilyLink' }}</h1>
-      <p class="page-intro">ใช้เวลาประมาณ 2 นาที กรอกเฉพาะข้อมูลที่จำเป็น ข้อมูลส่วนตัวอื่นเจ้าหน้าที่จะสอบถามเมื่อมาที่สมาคม</p>
+      <p class="page-intro">ใช้เวลาประมาณ 3 นาที เตรียมบัตรประชาชนไว้ เพราะต้องกรอกเลขบัตร 13 หลัก ต้องกรอกทุกช่อง ยกเว้นช่องที่เขียนว่า “ไม่บังคับ” ข้อมูลส่วนตัวอื่นเจ้าหน้าที่จะสอบถามเมื่อมาที่สมาคม</p>
       @if (summary().length) {
         <div class="notice notice-error" role="alert" tabindex="-1" #errors>
           <p><strong>กรุณาตรวจสอบข้อมูลต่อไปนี้</strong></p>
@@ -102,9 +105,8 @@ const MAX_BYTES = 10_000_000;
               @if (err('lastName')) { <p class="field-error">{{ err('lastName') }}</p> }
             </div>
             <div class="intake-field">
-              <label for="phone">เบอร์มือถือ</label>
+              <div class="label-row"><label for="phone">เบอร์มือถือ</label><fl-help-tip tipId="phone-hint" text="เช่น 0812345678" /></div>
               <input id="phone" name="phoneMobile" type="tel" inputmode="numeric" autocomplete="tel" [(ngModel)]="f.phoneMobile" maxlength="12" [attr.aria-invalid]="!!err('phoneMobile')" aria-describedby="phone-hint" />
-              <p id="phone-hint" class="field-hint">เช่น 0812345678</p>
               @if (err('phoneMobile')) { <p class="field-error">{{ err('phoneMobile') }}</p> }
             </div>
             <div class="intake-field">
@@ -112,6 +114,7 @@ const MAX_BYTES = 10_000_000;
               <input id="email" name="email" type="email" autocomplete="email" [(ngModel)]="f.email" maxlength="150" [attr.aria-invalid]="!!err('email')" />
               @if (err('email')) { <p class="field-error">{{ err('email') }}</p> }
             </div>
+            <fl-citizen-id-field [model]="f" [errors]="errors()" />
             <div class="intake-field">
               <label for="province">จังหวัด</label>
               <select id="province" name="provinceId" [ngModel]="f.provinceId" (ngModelChange)="pickProvince($event)" [attr.aria-invalid]="!!err('provinceId')">
@@ -219,7 +222,7 @@ export class SignupComponent implements OnInit {
   docType = '';
   f = {
     registeringFor: 'self' as 'self' | 'another', relationship: '', fillerName: '', caregiverMemberId: '',
-    memberType: '', firstName: '', lastName: '', birthDate: '', phoneMobile: '', email: '',
+    memberType: '', firstName: '', lastName: '', birthDate: '', phoneMobile: '', email: '', citizenId: '', noCitizenId: false, citizenIdMissingReason: '',
     provinceId: '', districtId: '', requestedServiceIds: [] as string[], privacy: false, news: false, photo: false,
   };
   hasIdentity() { return this.session.signedIn; }
@@ -305,6 +308,7 @@ export class SignupComponent implements OnInit {
     if (!f.birthDate) e['birthDate'] = 'กรุณาเลือกวันเกิด';
     if (!/^0[689]\d{8}$/.test(f.phoneMobile.replace(/[\s-]/g, ''))) e['phoneMobile'] = 'กรุณากรอกเบอร์มือถือ 10 หลัก เช่น 0812345678';
     if (f.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) e['email'] = 'กรุณาตรวจสอบอีเมล';
+    Object.assign(e, citizenIdProblems(f, true));
     if (!f.provinceId) e['provinceId'] = 'กรุณาเลือกจังหวัด';
     if (!f.districtId) e['districtId'] = 'กรุณาเลือกอำเภอ / เขต';
     if (!f.requestedServiceIds.length) e['requestedServiceIds'] = 'กรุณาเลือกบริการอย่างน้อย 1 อย่าง';
@@ -330,7 +334,9 @@ export class SignupComponent implements OnInit {
     const body: Record<string, unknown> = {
       ...(this.token ? { inviteToken: this.token } : {}),
       firstName: f.firstName.trim(), lastName: f.lastName.trim(), birthDate: f.birthDate, phoneMobile: f.phoneMobile.replace(/[\s-]/g, ''),
-      ...(f.email.trim() ? { email: f.email.trim() } : {}), memberType: f.memberType, provinceId: f.provinceId, districtId: f.districtId,
+      ...(f.email.trim() ? { email: f.email.trim() } : {}),
+      ...(f.noCitizenId ? { noCitizenId: true, citizenIdMissingReason: f.citizenIdMissingReason.trim() } : { citizenId: normalizeCitizenId(f.citizenId) }),
+      memberType: f.memberType, provinceId: f.provinceId, districtId: f.districtId,
       requestedServiceIds: f.requestedServiceIds, registeringFor: f.registeringFor,
       ...(f.registeringFor === 'another' ? { relationship: f.relationship.trim() } : {}),
       ...(f.registeringFor === 'another' && f.caregiverMemberId && !this.token ? { caregiverMemberId: f.caregiverMemberId } : {}),

@@ -1,4 +1,4 @@
-import { goStaff } from './helpers';
+import { goStaff, citizenId } from './helpers';
 import { test, expect } from '@playwright/test';
 
 test('staff profile preserves note history and lets the author correct and delete a note', async ({
@@ -11,6 +11,8 @@ test('staff profile preserves note history and lets the author correct and delet
   await goStaff(page, 'เพิ่มสมาชิกจากใบสมัคร');
   await page.getByLabel('ชื่อ', { exact: true }).fill(`บันทึก${Date.now()}`);
   await page.getByLabel('นามสกุล', { exact: true }).fill('ทดสอบ');
+  await page.getByLabel('วันเกิด (ค.ศ.)', { exact: true }).fill('1985-05-05');
+  await page.getByLabel('เลขบัตรประชาชน', { exact: true }).fill(citizenId());
   await page.getByRole('button', { name: 'บันทึกสมาชิก', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'บันทึกเคส' })).toBeVisible();
 

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { bangkokToday, signIn, unique, goStaff } from './helpers';
+import { bangkokToday, signIn, unique, goStaff, citizenId } from './helpers';
 
 test('staff create a course, a run with two days and a question, and see it locked after the first booking', async ({ page, request }) => {
   const id = unique();
@@ -40,7 +40,7 @@ test('staff create a course, a run with two days and a question, and see it lock
   const runId = page.url().split('/').pop()!;
   const login = await request.post('/api/auth/login', { data: { email: 'admin@familylink.test', password: 'Synthetic-password-2026' } });
   const csrf = (await login.json()).csrfToken;
-  const member = await (await request.post('/api/members', { headers: { 'X-CSRF-Token': csrf }, data: { firstName: `ล็อก${id}`, lastName: 'ทดสอบ' } })).json();
+  const member = await (await request.post('/api/members', { headers: { 'X-CSRF-Token': csrf }, data: { firstName: `ล็อก${id}`, lastName: 'ทดสอบ', citizenId: citizenId(), birthDate: '1985-05-05' } })).json();
   const run = await (await request.get(`/api/runs/${runId}`)).json();
   const answers = { [run.questions[0].id]: 'เอ' };
   expect((await request.post(`/api/runs/${runId}/registrations`, { headers: { 'X-CSRF-Token': csrf }, data: { memberId: member.id, sessionIds: [], answers, operationKey: crypto.randomUUID() } })).status()).toBe(201);

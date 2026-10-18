@@ -16,7 +16,7 @@ test('staff mark attendance on a phone; marks persist and unmarked stays distinc
   const context = await browser.newContext({ viewport: { width: 360, height: 740 } });
   const page = await context.newPage();
   await signIn(page);
-  await page.getByRole('link', { name: 'เช็คชื่อ' }).click();
+  await goStaff(page, 'เช็คชื่อ');
   await page.getByRole('link', { name: `เช็คชื่อ ${seeded.courseName} ${seeded.batchName}` }).click();
   await expect(page.getByRole('heading', { name: `${seeded.courseName} · ${seeded.batchName}` })).toBeVisible();
   await expect(page.getByRole('status').filter({ hasText: 'ยังไม่เช็ค 3' })).toBeVisible();

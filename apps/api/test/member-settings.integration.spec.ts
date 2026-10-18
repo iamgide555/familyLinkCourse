@@ -1,3 +1,4 @@
+import { withIdentity } from './helpers.js';
 import request from 'supertest';
 import { hash } from 'argon2';
 import { createTestApp, type TestApp } from './test-app.js';
@@ -16,7 +17,7 @@ describe('member settings and PDPA administration', () => {
     request(ctx.app.getHttpServer())[method](path)
       .set('Cookie', role === 'admin' ? adminCookie : staffCookie)
       .set('X-CSRF-Token', role === 'admin' ? adminCsrf : staffCsrf)
-      .send(body);
+      .send(path === '/api/members' && method === 'post' && body ? withIdentity(body) : body);
   beforeAll(async () => {
     ctx = await createTestApp();
     for (const role of ['admin', 'staff'] as const) await ctx.db.user.create({ data: {

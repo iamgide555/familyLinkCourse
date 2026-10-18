@@ -22,13 +22,10 @@ type Detail = { current: SnapshotView | null; history: SnapshotView[] };
     @if (error()) { <p class="notice notice-error" role="alert">{{ error() }}</p> }
     @if (loading()) { <p role="status">กำลังโหลดรายชื่อ…</p> }
     @else if (!items().length) { <p class="empty-state">ยังไม่มีผู้ลงทะเบียน</p> }
-    @for (reg of items(); track reg.id; let i = $index) {
-      <article class="review-item ticket-stubbed" [attr.aria-label]="'การลงทะเบียนของ ' + reg.memberName">
-        <div class="stub" aria-hidden="true"><span class="stub-label">ใบที่</span><span class="stub-num">{{ i + 1 }}</span></div>
-        <div class="ticket-body">
+    @for (reg of items(); track reg.id) {
+      <article class="review-item" [attr.aria-label]="'การลงทะเบียนของ ' + reg.memberName">
         <h3><a [routerLink]="['/staff/members', reg.memberId]">{{ reg.memberName }}</a></h3>
         <p class="record-state">เลขสมาชิก {{ reg.memberNumber }} · {{ reg.source === 'walkin' ? 'ลงทะเบียนหน้างาน' : reg.registeredBy === 'staff' ? 'เจ้าหน้าที่ลงทะเบียนให้' : 'สมาชิกลงทะเบียนเอง' }} · {{ reg.unsigned ? 'ยังไม่ได้ลงนาม' : 'ลงนามแล้ว' }}</p>
-        <div class="tear" aria-hidden="true"></div>
         <ul class="entry-list">
           @for (e of reg.entries; track $index) {
             <li>
@@ -57,7 +54,6 @@ type Detail = { current: SnapshotView | null; history: SnapshotView[] };
             }
           </div>
         }
-        </div>
       </article>
     }
     @if (act(); as a) {

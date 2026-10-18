@@ -24,6 +24,7 @@ import type { MembershipFilter } from '../../../../packages/contracts/src/member
 const EMPTY = {
   memberType: '' as const,
   citizenId: '',
+  citizenIdMissingReason: '',
   disabilityType: '',
   householdIncome: '',
   householdSize: null,
@@ -206,7 +207,11 @@ export class Members {
         firstName: input.firstName,
         lastName: input.lastName,
       };
-      validateIntake(merged, this.clock.now());
+      // A new record needs an ID number or a stated reason. An existing one may not lose what it already has, but an older
+      // record that never had either can still be edited for something else.
+      const hadIdentity = !!(previous?.citizenId || previous?.citizenIdMissingReason);
+      validateIntake(merged, this.clock.now(), { requireCitizenId: !existing || hadIdentity, requireBirthDate: !existing || !!previous?.birthDate });
+      if (merged.citizenId) merged.citizenIdMissingReason = '';
       this.references.validateAddress(merged);
       if (input.requestedServiceIds?.length) {
         const ids = [...new Set(input.requestedServiceIds)];

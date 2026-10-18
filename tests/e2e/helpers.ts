@@ -12,15 +12,20 @@ export async function signIn(page: Page, who = ADMIN): Promise<void> {
   await expect(page).toHaveURL(/\/staff$/);
 }
 
-/** The staff bar keeps four daily links; the rest (and the account) sit behind "เพิ่มเติม". */
-export async function openMore(page: Page): Promise<void> {
-  const toggle = page.getByRole('button', { name: /^เพิ่มเติม/ });
-  if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click();
-}
-/** Opens the "เพิ่มเติม" menu if needed and follows one of its links. */
+const TAB_OF: Record<string, string> = {
+  ค้นหาสมาชิก: 'สมาชิก', เพิ่มสมาชิกจากใบสมัคร: 'สมาชิก', รอตรวจสอบ: 'สมาชิก', สร้างลิงก์สมัคร: 'สมาชิก',
+  ภาพรวม: 'วันนี้', เช็คชื่อ: 'วันนี้', ข้อความแจ้งเตือน: 'วันนี้', คอร์สและรอบ: 'คอร์ส',
+  รายงาน: 'รายงาน', ตั้งค่าประเภทบริการและเอกสาร: 'รายงาน', ตั้งค่าระบบ: 'รายงาน', บัญชีเจ้าหน้าที่: 'รายงาน',
+};
+/** Follows a staff page by its name: opens the tab it lives in (one of four), then its chip when the tab has several. */
 export async function goStaff(page: Page, name: string): Promise<void> {
-  await openMore(page);
-  await page.getByRole('link', { name }).click();
+  const tab = TAB_OF[name];
+  if (!tab) throw new Error(`Unknown staff page: ${name}`);
+  const chip = page.getByRole('navigation', { name: 'เมนูย่อย' }).getByRole('link', { name });
+  const visible = await chip.waitFor({ state: 'visible', timeout: 400 }).then(() => true, () => false);
+  if (!visible) await page.getByRole('navigation', { name: 'เมนูเจ้าหน้าที่' }).getByRole('link', { name: new RegExp(`^${tab}`) }).click();
+  // A tab with a single page has no chip row; the tab itself already opened that page.
+  if (await chip.waitFor({ state: 'visible', timeout: 1000 }).then(() => true, () => false)) await chip.click();
 }
 
 /* Test fixtures read loosely typed JSON from the API. */
@@ -39,7 +44,11 @@ export async function staffApi(request: APIRequestContext, who = ADMIN): Promise
   expect(login.ok()).toBeTruthy();
   const { csrfToken } = await login.json();
   const send = async (method: 'get' | 'post' | 'patch' | 'put', path: string, body?: unknown) => {
-    const response = await request[method](`/api${path}`, { headers: { 'X-CSRF-Token': csrfToken }, ...(body === undefined ? {} : { data: body }) });
+    const isNewMember = method === 'post' && path === '/members' && body && typeof body === 'object';
+    const payload = isNewMember
+      ? { ...(!('citizenId' in body) && !('noCitizenId' in body) ? { citizenId: citizenId() } : {}), ...(!('birthDate' in body) ? { birthDate: '1985-05-05' } : {}), ...body }
+      : body;
+    const response = await request[method](`/api${path}`, { headers: { 'X-CSRF-Token': csrfToken }, ...(payload === undefined ? {} : { data: payload }) });
     if (!response.ok()) throw new Error(`${method} ${path} -> ${response.status()} ${await response.text()}`);
     return response.json();
   };
@@ -55,7 +64,7 @@ export async function lineContext(browser: Browser, id: string): Promise<{ conte
 export const lineHeaders = (id: string) => ({ 'x-dev-line-user-id': id });
 
 /** Fills the member signup form through the UI. */
-export async function fillSignup(page: Page, v: { first: string; last: string; birth: string; phone?: string; type?: string; relationship?: string; filler?: string; email?: string }): Promise<void> {
+export async function fillSignup(page: Page, v: { first: string; last: string; birth: string; phone?: string; type?: string; relationship?: string; filler?: string; email?: string; citizenId?: string }): Promise<void> {
   if (v.relationship !== undefined) {
     await page.getByLabel('สมัครให้บุคคลในครอบครัวที่ดูแลอยู่').check();
     await page.getByLabel('ท่านเป็นอะไรกับผู้สมัคร (เช่น มารดา บุตร ภรรยา)').fill(v.relationship);
@@ -66,6 +75,7 @@ export async function fillSignup(page: Page, v: { first: string; last: string; b
   await page.getByLabel('นามสกุล', { exact: true }).fill(v.last);
   await page.getByLabel('วันเกิด', { exact: true }).fill(v.birth);
   await page.getByLabel('เบอร์มือถือ', { exact: true }).fill(v.phone ?? '0812345678');
+  await page.getByLabel('เลขบัตรประชาชน', { exact: true }).fill(v.citizenId ?? citizenId());
   if (v.email) await page.getByLabel('อีเมล (ไม่บังคับ)').fill(v.email);
   await page.getByLabel('จังหวัด', { exact: true }).selectOption('กระบี่');
   await expect(page.getByLabel('อำเภอ / เขต')).toBeEnabled();
@@ -97,7 +107,7 @@ export async function joinedMember(browser: Browser, request: APIRequestContext,
   const options = await (await request.get('/api/member/signup/options')).json();
   const response = await request.post('/api/member/signup', {
     headers: lineHeaders(line.id),
-    data: { firstName: first, lastName: 'ทดสอบ', birthDate: birth, phoneMobile: '0811110000', memberType: 'caregiver', provinceId: 'กระบี่', districtId: 'เกาะลันตา', requestedServiceIds: [options.services[0].id], registeringFor: 'self', privacyConsent: { version: 'v1', consentedBy: 'self', granted: true } },
+    data: { citizenId: citizenId(), firstName: first, lastName: 'ทดสอบ', birthDate: birth, phoneMobile: '0811110000', memberType: 'caregiver', provinceId: 'กระบี่', districtId: 'เกาะลันตา', requestedServiceIds: [options.services[0].id], registeringFor: 'self', privacyConsent: { version: 'v1', consentedBy: 'self', granted: true } },
   });
   expect(response.status()).toBe(201);
   return { ...line, name: `${first} ทดสอบ`, memberId: (await response.json()).memberId as string };

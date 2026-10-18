@@ -1,4 +1,4 @@
-import { goStaff } from './helpers';
+import { goStaff, citizenId } from './helpers';
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
@@ -10,6 +10,8 @@ test('server validation identifies and focuses invalid mobile input while retain
   await page.getByLabel('ชื่อ', { exact: true }).fill('ทดสอบตรวจสอบ');
   await page.getByLabel('นามสกุล', { exact: true }).fill('นามสมมติ');
   await page.getByLabel('เบอร์มือถือ', { exact: true }).fill('12345');
+  await page.getByLabel('วันเกิด (ค.ศ.)', { exact: true }).fill('1985-05-05');
+  await page.getByLabel('เลขบัตรประชาชน', { exact: true }).fill(citizenId());
   await page.getByRole('button', { name: 'บันทึกสมาชิก', exact: true }).click();
   await expect(page.getByLabel('เบอร์มือถือ', { exact: true })).toBeFocused();
   await expect(page.getByLabel('เบอร์มือถือ', { exact: true })).toHaveAttribute(
@@ -39,8 +41,10 @@ test('staff can add a paper member, reload, search, open and edit their profile'
   await page.getByLabel('ชื่อ', { exact: true }).fill(name);
   await page.getByLabel('นามสกุล', { exact: true }).fill('ทดสอบระบบ');
   await page.getByLabel('เบอร์มือถือ', { exact: true }).fill('0812345678');
+  await page.getByLabel('วันเกิด (ค.ศ.)', { exact: true }).fill('1985-05-05');
+  await page.getByLabel('เลขบัตรประชาชน', { exact: true }).fill(citizenId());
   await page.getByRole('button', { name: 'บันทึกสมาชิก', exact: true }).click();
-  await expect(page.getByRole('status')).toContainText('บันทึกสมาชิกแล้ว');
+  await expect(page.getByRole('status').filter({ hasText: 'บันทึกสมาชิกแล้ว' })).toBeVisible();
   await expect(page.getByRole('heading', { name: `${name} ทดสอบระบบ`, exact: true })).toBeVisible();
   await page.reload();
   await expect(page.getByRole('heading', { name: `${name} ทดสอบระบบ`, exact: true })).toBeVisible();
@@ -59,6 +63,8 @@ test('missing names focus first field; optional identity information never block
 }) => {
   await signIn(page);
   await goStaff(page, 'เพิ่มสมาชิกจากใบสมัคร');
+  await page.getByLabel('วันเกิด (ค.ศ.)', { exact: true }).fill('1985-05-05');
+  await page.getByLabel('เลขบัตรประชาชน', { exact: true }).fill(citizenId());
   await page.getByRole('button', { name: 'บันทึกสมาชิก', exact: true }).click();
   await expect(page.getByLabel('ชื่อ', { exact: true })).toBeFocused();
   await expect(page.getByText('กรุณากรอกชื่อ', { exact: true })).toBeVisible();
@@ -74,15 +80,16 @@ test('matching name and birth date retains entered values and offers existing or
     await page.getByLabel('ชื่อ', { exact: true }).fill(name);
     await page.getByLabel('นามสกุล', { exact: true }).fill('ทดสอบ');
     await page.getByLabel('วันเกิด (ค.ศ.)', { exact: true }).fill('1960-01-01');
+    await page.getByLabel('เลขบัตรประชาชน', { exact: true }).fill(citizenId());
     await page.getByRole('button', { name: 'บันทึกสมาชิก', exact: true }).click();
-    if (attempt === 0) await expect(page.getByRole('status')).toContainText('บันทึกสมาชิกแล้ว');
+    if (attempt === 0) await expect(page.getByRole('status').filter({ hasText: 'บันทึกสมาชิกแล้ว' })).toBeVisible();
   }
   await expect(page.getByRole('heading', { name: 'พบสมาชิกชื่อและวันเกิดตรงกัน' })).toBeVisible();
   await expect(page.getByLabel('ชื่อ', { exact: true })).toHaveValue(name);
   await expect(page.getByRole('link', { name: `เปิดข้อมูลเดิม ${name} ทดสอบ` })).toHaveText('เปิดข้อมูลเดิม');
   await page.getByLabel('เหตุผลที่สร้างสมาชิกใหม่').fill('ตรวจแล้ว เป็นคนละคน');
   await page.getByRole('button', { name: 'ยืนยันสร้างสมาชิกใหม่' }).click();
-  await expect(page.getByRole('status')).toContainText('บันทึกสมาชิกแล้ว');
+  await expect(page.getByRole('status').filter({ hasText: 'บันทึกสมาชิกแล้ว' })).toBeVisible();
 });
 
 test('failed edit load keeps the blank form unavailable and offers retry', async ({ page }) => {
@@ -102,6 +109,8 @@ test('invalid household count opens its section and focuses the bounded field', 
   await page.getByText('ข้อมูลเพิ่มเติมจากใบสมัคร', { exact: true }).click();
   await page.getByLabel('จำนวนคนในครัวเรือน', { exact: true }).fill('1001');
   await page.getByText('ข้อมูลเพิ่มเติมจากใบสมัคร', { exact: true }).click();
+  await page.getByLabel('วันเกิด (ค.ศ.)', { exact: true }).fill('1985-05-05');
+  await page.getByLabel('เลขบัตรประชาชน', { exact: true }).fill(citizenId());
   await page.getByRole('button', { name: 'บันทึกสมาชิก' }).click();
   await expect(page.getByLabel('จำนวนคนในครัวเรือน', { exact: true })).toBeFocused();
   await expect(page.getByLabel('จำนวนคนในครัวเรือน', { exact: true })).toHaveAttribute('aria-invalid', 'true');
@@ -113,6 +122,8 @@ test('stale edit preserves its draft and offers an explicit reload', async ({ pa
   const name = `ฉบับ${Date.now()}`;
   await page.getByLabel('ชื่อ', { exact: true }).fill(name);
   await page.getByLabel('นามสกุล', { exact: true }).fill('ทดสอบ');
+  await page.getByLabel('วันเกิด (ค.ศ.)', { exact: true }).fill('1985-05-05');
+  await page.getByLabel('เลขบัตรประชาชน', { exact: true }).fill(citizenId());
   await page.getByRole('button', { name: 'บันทึกสมาชิก' }).click();
   await expect(page.getByRole('heading', { name: `${name} ทดสอบ`, exact: true })).toBeVisible();
   const memberUrl = page.url();
@@ -149,6 +160,8 @@ test('admin can log a PDPA access request and soft delete a member', async ({ pa
   const name = `สิทธิ${Date.now()}`;
   await page.getByLabel('ชื่อ', { exact: true }).fill(name);
   await page.getByLabel('นามสกุล', { exact: true }).fill('ทดสอบ');
+  await page.getByLabel('วันเกิด (ค.ศ.)', { exact: true }).fill('1985-05-05');
+  await page.getByLabel('เลขบัตรประชาชน', { exact: true }).fill(citizenId());
   await page.getByRole('button', { name: 'บันทึกสมาชิก' }).click();
   await page.getByRole('heading', { name: 'คำขอข้อมูลส่วนบุคคล' }).waitFor();
   await page.getByLabel('ประเภทคำขอ').selectOption('access');
@@ -175,6 +188,8 @@ test('admin configures a service type that staff can select for intake', async (
   await page.getByRole('checkbox', { name: label }).check();
   await page.getByLabel('ชื่อ', { exact: true }).fill(`สนใจ${Date.now()}`);
   await page.getByLabel('นามสกุล', { exact: true }).fill('ทดสอบ');
+  await page.getByLabel('วันเกิด (ค.ศ.)', { exact: true }).fill('1985-05-05');
+  await page.getByLabel('เลขบัตรประชาชน', { exact: true }).fill(citizenId());
   await page.getByRole('button', { name: 'บันทึกสมาชิก' }).click();
   await expect(page.getByText(label, { exact: false })).toBeVisible();
 });
@@ -202,8 +217,10 @@ test('staff can choose an existing caregiver sharing the phone, then open that c
   await page.getByLabel('ชื่อ', { exact: true }).fill(caregiver);
   await page.getByLabel('นามสกุล', { exact: true }).fill('ครอบครัวสมมติ');
   await page.getByLabel('เบอร์มือถือ', { exact: true }).fill('0812345678');
+  await page.getByLabel('วันเกิด (ค.ศ.)', { exact: true }).fill('1985-05-05');
+  await page.getByLabel('เลขบัตรประชาชน', { exact: true }).fill(citizenId());
   await page.getByRole('button', { name: 'บันทึกสมาชิก', exact: true }).click();
-  await expect(page.getByRole('status')).toContainText('บันทึกสมาชิกแล้ว');
+  await expect(page.getByRole('status').filter({ hasText: 'บันทึกสมาชิกแล้ว' })).toBeVisible();
   await goStaff(page, 'เพิ่มสมาชิกจากใบสมัคร');
   await page.getByLabel('ชื่อ', { exact: true }).fill(`สมาชิก${suffix}`);
   await page.getByLabel('นามสกุล', { exact: true }).fill('ครอบครัวสมมติ');
@@ -213,6 +230,8 @@ test('staff can choose an existing caregiver sharing the phone, then open that c
   await page.getByRole('button', { name: 'ค้นหาผู้ดูแล', exact: true }).click();
   await page.getByRole('button', { name: `เลือก ${caregiver} ครอบครัวสมมติ`, exact: true }).click();
   await page.getByLabel('ความสัมพันธ์ของผู้ดูแลกับสมาชิก', { exact: true }).fill('มารดา');
+  await page.getByLabel('วันเกิด (ค.ศ.)', { exact: true }).fill('1985-05-05');
+  await page.getByLabel('เลขบัตรประชาชน', { exact: true }).fill(citizenId());
   await page.getByRole('button', { name: 'บันทึกสมาชิก', exact: true }).click();
   await expect(
     page.getByRole('heading', { name: `สมาชิก${suffix} ครอบครัวสมมติ`, exact: true }),
@@ -231,29 +250,31 @@ test('optional intake details stay out of the basic task and retain values when 
   await expect(
     page.getByRole('heading', { name: 'เพิ่มสมาชิกจากใบสมัคร', exact: true }),
   ).toBeVisible();
-  await expect(page.getByLabel('เลขบัตรประชาชน', { exact: true })).not.toBeVisible();
+  // The ID number is part of the basic task now; the other sensitive details stay behind the section.
+  await expect(page.getByLabel('เลขบัตรประชาชน', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('ประเภทความพิการ', { exact: true })).not.toBeVisible();
   await page.getByLabel('ชื่อ', { exact: true }).fill(`เพิ่มเติม${Date.now()}`);
   await page.getByLabel('นามสกุล', { exact: true }).fill('ทดสอบ');
   await page.getByText('ข้อมูลเพิ่มเติมจากใบสมัคร', { exact: true }).click();
-  await page.getByLabel('เลขบัตรประชาชน', { exact: true }).fill('1234567890121');
+  await page.getByLabel('ประเภทความพิการ', { exact: true }).fill('ตัวอย่างสำหรับทดสอบ');
   await page.getByText('ข้อมูลเพิ่มเติมจากใบสมัคร', { exact: true }).click();
-  await expect(page.getByLabel('เลขบัตรประชาชน', { exact: true })).not.toBeVisible();
+  await expect(page.getByLabel('ประเภทความพิการ', { exact: true })).not.toBeVisible();
   await page.getByText('ข้อมูลเพิ่มเติมจากใบสมัคร', { exact: true }).click();
-  await expect(page.getByLabel('เลขบัตรประชาชน', { exact: true })).toHaveValue('1234567890121');
+  await expect(page.getByLabel('ประเภทความพิการ', { exact: true })).toHaveValue('ตัวอย่างสำหรับทดสอบ');
 });
 
-test('invalid optional information opens its section and focuses the exact problem', async ({
+test('a mistyped ID number focuses the ID field with a clear message', async ({
   page,
 }) => {
   await signIn(page);
   await goStaff(page, 'เพิ่มสมาชิกจากใบสมัคร');
   await page.getByLabel('ชื่อ', { exact: true }).fill('ตรวจเลขบัตร');
   await page.getByLabel('นามสกุล', { exact: true }).fill('ทดสอบ');
-  await page.getByText('ข้อมูลเพิ่มเติมจากใบสมัคร', { exact: true }).click();
+  await page.getByLabel('วันเกิด (ค.ศ.)', { exact: true }).fill('1985-05-05');
   await page.getByLabel('เลขบัตรประชาชน', { exact: true }).fill('123');
-  await page.getByText('ข้อมูลเพิ่มเติมจากใบสมัคร', { exact: true }).click();
   await page.getByRole('button', { name: 'บันทึกสมาชิก', exact: true }).click();
   await expect(page.getByLabel('เลขบัตรประชาชน', { exact: true })).toBeFocused();
+  await expect(page.getByText('เลขบัตรประชาชนไม่ถูกต้อง กรุณาตรวจสอบทั้ง 13 หลัก')).toBeVisible();
 });
 
 test('invalid email gets a field-level correction instead of an unexplained save failure', async ({
@@ -264,6 +285,8 @@ test('invalid email gets a field-level correction instead of an unexplained save
   await page.getByLabel('ชื่อ', { exact: true }).fill('ตรวจอีเมล');
   await page.getByLabel('นามสกุล', { exact: true }).fill('ทดสอบ');
   await page.getByLabel('อีเมล', { exact: true }).fill('incorrect');
+  await page.getByLabel('วันเกิด (ค.ศ.)', { exact: true }).fill('1985-05-05');
+  await page.getByLabel('เลขบัตรประชาชน', { exact: true }).fill(citizenId());
   await page.getByRole('button', { name: 'บันทึกสมาชิก', exact: true }).click();
   await expect(page.getByLabel('อีเมล', { exact: true })).toBeFocused();
   await expect(page.getByLabel('อีเมล', { exact: true })).toHaveAttribute('aria-invalid', 'true');

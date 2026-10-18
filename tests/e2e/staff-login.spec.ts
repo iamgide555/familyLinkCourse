@@ -1,4 +1,3 @@
-import { openMore } from './helpers';
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
@@ -9,7 +8,6 @@ test('staff signs in and signs out using visible Thai controls', async ({ page }
   await page.getByLabel('รหัสผ่าน', { exact: true }).fill('Synthetic-password-2026');
   await page.getByRole('button', { name: 'เข้าสู่ระบบ', exact: true }).click();
   await expect(page).toHaveURL(/\/staff$/);
-  await openMore(page);
   await expect(page.getByText('ผู้ดูแลระบบทดสอบ', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'ออกจากระบบ' }).click();
   await expect(page).toHaveURL(/\/staff\/login/);
@@ -70,8 +68,9 @@ test('signing out after session expiry clears stale identity and returns to logi
   await page.getByLabel('รหัสผ่าน', { exact: true }).fill('Synthetic-password-2026');
   await page.getByRole('button', { name: 'เข้าสู่ระบบ', exact: true }).click();
   await expect(page).toHaveURL(/\/staff$/);
+  // Let the page's own startup requests finish; a late response would renew the session cookie we are clearing.
+  await page.waitForLoadState('networkidle');
   await context.clearCookies();
-  await openMore(page);
   await page.getByRole('button', { name: 'ออกจากระบบ' }).click();
   await expect(page).toHaveURL(/\/staff\/login/);
   await expect(page.getByRole('alert')).toContainText('เข้าสู่ระบบอีกครั้ง');

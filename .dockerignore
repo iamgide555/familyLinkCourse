@@ -10,5 +10,4 @@ playwright-report
 apps/*/node_modules
 apps/web/.angular
 *.log
-prototype
 docs

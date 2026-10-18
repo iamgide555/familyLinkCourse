@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { bangkokToday, signIn, staffApi, unique, goStaff, openMore } from './helpers';
+import { bangkokToday, signIn, staffApi, unique, goStaff } from './helpers';
 
 test('admin sets up a tier; staff record upgrade, expiry, renewal; admin voids; filters follow', async ({ page, request }) => {
   const id = unique();
@@ -64,7 +64,7 @@ test('staff cannot see admin-only membership controls', async ({ page, request, 
   const context = await browser.newContext();
   const staffPage = await context.newPage();
   await signIn(staffPage, { email, password: 'Synthetic-password-2026' });
-  await openMore(staffPage);
+  await goStaff(staffPage, 'รายงาน');
   await expect(staffPage.getByRole('link', { name: 'ตั้งค่าระบบ' })).toHaveCount(0);
   await expect(staffPage.getByRole('link', { name: 'บัญชีเจ้าหน้าที่' })).toHaveCount(0);
   await staffPage.goto(`/staff/members/${member.id}`);

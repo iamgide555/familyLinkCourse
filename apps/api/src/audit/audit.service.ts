@@ -14,6 +14,8 @@ const ALLOWED_FIELDS = new Set([
   'birthDate',
   'phoneMobile',
   'citizenId',
+  'noCitizenId',
+  'citizenIdMissingReason',
   'signedFormAt',
   'body',
   'deletedAt',

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { bangkokToday, fillSignup, lineContext, signIn, staffApi, tinyPng, unique, goStaff } from './helpers';
+import { bangkokToday, fillSignup, lineContext, signIn, staffApi, tinyPng, unique, goStaff, citizenId } from './helpers';
 
 /**
  * The whole POC in one run, as staff and members would use it: course set-up, signup with an existing-member
@@ -42,7 +42,7 @@ test('POC dry run: course to attendance to exports, through the real screens', a
   await applicant.page.getByRole('button', { name: 'ส่งใบสมัคร' }).click();
   await expect(applicant.page.getByRole('heading', { name: 'ส่งข้อมูลแล้ว รอเจ้าหน้าที่ยืนยัน' })).toBeVisible();
   expect(await applicant.page.content()).not.toContain(existing.memberNumber);
-  await page.getByRole('link', { name: /รอตรวจสอบ/ }).click();
+  await goStaff(page, 'รอตรวจสอบ');
   const request1 = page.getByRole('article', { name: `ใบสมัครของ นายสมาชิกเดิม${id} ทดสอบ` });
   await request1.getByRole('button', { name: 'เชื่อมกับสมาชิกคนนี้' }).click();
   await expect(page.getByRole('status').filter({ hasText: 'ตรวจสอบใบสมัครของ' })).toBeVisible();
@@ -92,6 +92,8 @@ test('POC dry run: course to attendance to exports, through the real screens', a
   await page.getByRole('link', { name: 'รับลงทะเบียนหน้างาน' }).click();
   await page.getByLabel('ชื่อ', { exact: true }).fill(`หน้างาน${id}`);
   await page.getByLabel('นามสกุล', { exact: true }).fill('ทดสอบ');
+  await page.getByLabel('วันเกิด', { exact: true }).fill('1985-05-05');
+  await page.getByLabel('เลขบัตรประชาชน', { exact: true }).fill(citizenId());
   await page.getByRole('button', { name: /ยืนยันรับลงทะเบียน/ }).click();
   await expect(page.getByText('กรุณาตอบคำถามนี้')).toBeVisible();
   await page.getByLabel('ชื่อเล่น', { exact: true }).fill('ค');

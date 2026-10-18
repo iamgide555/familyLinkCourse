@@ -3,7 +3,13 @@ import { AppError } from '../common/errors.js';
 export function normalizePhone(value: string): string {
   return value.replace(/[\s()-]/g, '');
 }
-export function validateIntake(input: StaffIntakeInput, now: Date): void {
+export type IntakeRules = {
+  /** New records need an ID number, or a stated reason why the person has none. */
+  requireCitizenId?: boolean;
+  /** New records need a birth date: with the name it is how staff tell people apart and spot duplicates. */
+  requireBirthDate?: boolean;
+};
+export function validateIntake(input: StaffIntakeInput, now: Date, rules: IntakeRules = {}): void {
   const fields: Record<string, string> = {};
   if (!input.firstName.trim()) fields['firstName'] = 'กรุณากรอกชื่อ';
   if (!input.lastName.trim()) fields['lastName'] = 'กรุณากรอกนามสกุล';
@@ -15,6 +21,7 @@ export function validateIntake(input: StaffIntakeInput, now: Date): void {
     fields['caregiverPhone'] = 'กรุณาตรวจสอบเบอร์ผู้ดูแล';
   if (input.emergencyPhone && !/^0\d{8,9}$/.test(input.emergencyPhone))
     fields['emergencyPhone'] = 'กรุณาตรวจสอบเบอร์ติดต่อฉุกเฉิน';
+  if (!input.birthDate && rules.requireBirthDate) fields['birthDate'] = 'กรุณากรอกวันเกิด ใช้ตรวจว่าเป็นคนเดียวกับสมาชิกเดิมหรือไม่';
   if (input.birthDate) {
     const date = new Date(input.birthDate + 'T00:00:00.000Z');
     const bangkokToday = new Intl.DateTimeFormat('en-CA', {
@@ -39,6 +46,14 @@ export function validateIntake(input: StaffIntakeInput, now: Date): void {
     if (sum < 0 || (11 - (sum % 11)) % 10 !== Number(id[12]))
       fields['citizenId'] = 'เลขบัตรประชาชนไม่ถูกต้อง กรุณาตรวจสอบทั้ง 13 หลัก';
   }
+  if (!input.citizenId) {
+    if (input.noCitizenId && !input.citizenIdMissingReason?.trim())
+      fields['citizenIdMissingReason'] = 'กรุณาระบุเหตุผลที่ไม่มีเลขบัตรประชาชน';
+    else if (rules.requireCitizenId && !input.citizenIdMissingReason?.trim())
+      fields['citizenId'] = 'กรุณากรอกเลขบัตรประชาชน 13 หลัก หรือเลือก “ไม่มีเลขบัตรประชาชน” พร้อมเหตุผล';
+  }
+  if (input.citizenIdMissingReason && input.citizenIdMissingReason.length > 500)
+    fields['citizenIdMissingReason'] = 'เหตุผลยาวเกินไป';
   if (input.caregiverMemberId && !input.caregiverRelationship?.trim())
     fields['caregiverRelationship'] = 'กรุณาระบุความสัมพันธ์กับสมาชิก';
   if (input.duplicateDecision === 'create_new' && !input.duplicateReason?.trim())

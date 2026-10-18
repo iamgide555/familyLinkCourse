@@ -7,7 +7,7 @@ export default tseslint.config(
       '**/*.conf.cjs',
       '**/dist/**',
       '**/node_modules/**',
-      'prototype/**',
+      'docs/archives/prototype/**',
       'test-results/**',
       'playwright-report/**',
       '**/*.config.cjs',

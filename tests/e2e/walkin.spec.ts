@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { bangkokToday, joinedMember, lineContext, seedRun, sessionInput, signIn, staffApi, unique } from './helpers';
+import { bangkokToday, joinedMember, lineContext, seedRun, sessionInput, signIn, staffApi, unique, citizenId } from './helpers';
 
 test('staff admit a walk-in to a full class: add seats, bypass the queue with a reason, hand over a link QR', async ({ browser, request, page }) => {
   const id = unique();
@@ -18,6 +18,8 @@ test('staff admit a walk-in to a full class: add seats, bypass the queue with a 
   await expect(page.getByText(/ที่นั่งเต็ม ต้องเพิ่มจำนวนที่นั่งพร้อมเหตุผล/)).toBeVisible();
   await page.getByLabel('ชื่อ', { exact: true }).fill(`หน้างาน${id}`);
   await page.getByLabel('นามสกุล', { exact: true }).fill('ทดสอบ');
+  await page.getByLabel('วันเกิด', { exact: true }).fill('1985-05-05');
+  await page.getByLabel('เลขบัตรประชาชน', { exact: true }).fill(citizenId());
   await page.getByLabel('เบอร์มือถือ', { exact: true }).fill('0812223333');
   await page.getByRole('button', { name: /ยืนยันรับลงทะเบียน/ }).click();
   await expect(page.getByRole('alert')).toContainText('ที่นั่งเต็ม');

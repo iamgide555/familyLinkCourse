@@ -1,3 +1,4 @@
+import { validCitizenId } from './helpers.js';
 import request from 'supertest';
 import { hash } from 'argon2';
 import { randomUUID } from 'node:crypto';
@@ -22,7 +23,7 @@ describe('member signup and invites', () => {
   it('issues a one-time signup invite and creates a member only once', async () => {
     const invite = await request(ctx.app.getHttpServer()).post('/api/member/invites').set('Cookie', cookie).set('X-CSRF-Token', csrf).send({ mode: 'signup', prefill: {} });
     expect(invite.status).toBe(201);
-    const body = { inviteToken: invite.body.token, memberType: 'caregiver', firstName: 'ทดสอบ', lastName: 'สมัคร', birthDate: '1990-01-01', phoneMobile: '0812345678', provinceId: 'กระบี่', districtId: 'เกาะลันตา', requestedServiceIds: [serviceTypeId], registeringFor: 'self', privacyConsent: { version: 'v1', consentedBy: 'self', granted: true } };
+    const body = { citizenId: validCitizenId(), inviteToken: invite.body.token, memberType: 'caregiver', firstName: 'ทดสอบ', lastName: 'สมัคร', birthDate: '1990-01-01', phoneMobile: '0812345678', provinceId: 'กระบี่', districtId: 'เกาะลันตา', requestedServiceIds: [serviceTypeId], registeringFor: 'self', privacyConsent: { version: 'v1', consentedBy: 'self', granted: true } };
     const responses = await Promise.all([1, 2].map(() => request(ctx.app.getHttpServer()).post('/api/member/signup').send(body)));
     expect(responses.map((r) => r.status).sort()).toEqual([201, 409]);
     expect(responses.find((r) => r.status === 201)?.body.kind).toBe('created');
@@ -31,7 +32,7 @@ describe('member signup and invites', () => {
   it('holds a name and birth-date match without exposing candidates, even when phone differs', async () => {
     const original = await ctx.db.member.create({ data: { organizationId: ctx.organizationId, firstName: 'ศิริ', lastName: 'ทดลอง', normalizedFirstName: 'ศิริ', normalizedLastName: 'ทดลอง', birthDate: '1975-04-05', phoneMobile: '0811111111' } });
     const invite = await request(ctx.app.getHttpServer()).post('/api/member/invites').set('Cookie', cookie).set('X-CSRF-Token', csrf).send({ mode: 'signup' });
-    const submission = await request(ctx.app.getHttpServer()).post('/api/member/signup').send({ inviteToken: invite.body.token, firstName: 'นางศิริ', lastName: 'ทดลอง', birthDate: '1975-04-05', phoneMobile: '0899999999', memberType: 'disabled', provinceId: 'กระบี่', districtId: 'เกาะลันตา', requestedServiceIds: [serviceTypeId], registeringFor: 'self', privacyConsent: { version: 'v1', consentedBy: 'self', granted: true } });
+    const submission = await request(ctx.app.getHttpServer()).post('/api/member/signup').send({ citizenId: validCitizenId(), inviteToken: invite.body.token, firstName: 'นางศิริ', lastName: 'ทดลอง', birthDate: '1975-04-05', phoneMobile: '0899999999', memberType: 'disabled', provinceId: 'กระบี่', districtId: 'เกาะลันตา', requestedServiceIds: [serviceTypeId], registeringFor: 'self', privacyConsent: { version: 'v1', consentedBy: 'self', granted: true } });
     expect(submission.status).toBe(201);
     expect(submission.body).toEqual({ kind: 'pending', requestId: expect.any(String) });
     expect(JSON.stringify(submission.body)).not.toContain(original.id);
@@ -45,5 +46,25 @@ describe('member signup and invites', () => {
     const response = await request(ctx.app.getHttpServer()).post('/api/member/signup').send({ inviteToken: invite.body.token, organizationId: randomUUID(), candidateMemberIds: [randomUUID()], firstName: 'อื่น', lastName: 'คน' });
     expect(response.status).toBe(422);
     expect((await ctx.db.signupInvite.findUniqueOrThrow({ where: { tokenHash: hashToken(invite.body.token) } })).usedAt).toBeNull();
+  });
+
+  it('asks for an ID number or a reason, and holds a signup whose ID number already belongs to a member', async () => {
+    const send = (payload: object) => request(ctx.app.getHttpServer()).post('/api/member/signup').send(payload);
+    const invite = async () => (await request(ctx.app.getHttpServer()).post('/api/member/invites').set('Cookie', cookie).set('X-CSRF-Token', csrf).send({ mode: 'signup', prefill: {} })).body.token as string;
+    const base = { memberType: 'caregiver', firstName: 'ใหม่', lastName: 'เลขบัตร', birthDate: '1991-07-07', phoneMobile: '0812345670', provinceId: 'กระบี่', districtId: 'เกาะลันตา', requestedServiceIds: [serviceTypeId], registeringFor: 'self', privacyConsent: { version: 'v1', consentedBy: 'self', granted: true } };
+    const none = await send({ ...base, inviteToken: await invite() });
+    expect(none.status).toBe(422);
+    const noReason = await send({ ...base, inviteToken: await invite(), noCitizenId: true });
+    expect(noReason.status).toBe(422);
+    const waived = await send({ ...base, inviteToken: await invite(), noCitizenId: true, citizenIdMissingReason: 'ยังไม่มีบัตรประชาชน' });
+    expect(waived.status).toBe(201);
+    expect(waived.body.kind).toBe('created');
+    // Same ID number, different name and birth date: never create a second person with it; staff decide.
+    const shared = validCitizenId();
+    const first = await send({ ...base, firstName: 'คนแรก', lastName: 'เลขซ้ำ', birthDate: '1985-01-01', inviteToken: await invite(), citizenId: shared });
+    expect(first.body.kind).toBe('created');
+    const second = await send({ ...base, firstName: 'คนที่สอง', lastName: 'ชื่ออื่น', birthDate: '1999-09-09', inviteToken: await invite(), citizenId: shared });
+    expect(second.status).toBe(201);
+    expect(second.body.kind).toBe('pending');
   });
 });

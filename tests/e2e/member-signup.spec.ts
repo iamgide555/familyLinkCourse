@@ -51,7 +51,7 @@ test('a matched signup waits for staff and never reveals the existing record', a
   // Staff confirm the link; the member then appears for that LINE account.
   const staff = await context.browser()!.newPage();
   await signIn(staff);
-  await staff.getByRole('link', { name: /รอตรวจสอบ/ }).click();
+  await goStaff(staff, 'รอตรวจสอบ');
   const card = staff.getByRole('article', { name: `ใบสมัครของ นายเดิม${id} ซ้ำชื่อ` });
   await expect(card.getByText(existing.memberNumber)).toBeVisible();
   await card.getByRole('button', { name: 'เชื่อมกับสมาชิกคนนี้' }).click();

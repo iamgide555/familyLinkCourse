@@ -19,6 +19,9 @@ export type SignupInput = {
   birthDate: string;
   phoneMobile: string;
   email?: string;
+  citizenId?: string;
+  noCitizenId?: boolean;
+  citizenIdMissingReason?: string;
   memberType: Exclude<MemberType, ''>;
   provinceId: string;
   districtId: string;

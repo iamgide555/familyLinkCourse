@@ -6,6 +6,9 @@ export type StaffIntakeInput = MemberName & {
   email?: string;
   memberType?: MemberType;
   citizenId?: string;
+  /** Set when the person truly has no ID number; the reason is stored with the record and the field is left empty. */
+  noCitizenId?: boolean;
+  citizenIdMissingReason?: string;
   disabilityType?: string;
   householdIncome?: string;
   householdSize?: number | null;
@@ -44,7 +47,7 @@ export type MemberSummary = MemberName & {
   signedFormAt: string | null;
 };
 export type MemberRecord = MemberSummary &
-  Required<Omit<StaffIntakeInput, keyof MemberName | 'duplicateDecision' | 'duplicateReason'>> & {
+  Required<Omit<StaffIntakeInput, keyof MemberName | 'duplicateDecision' | 'duplicateReason' | 'noCitizenId'>> & {
     source: 'paper' | 'line' | 'walkin' | 'invite';
     lineLinked: boolean;
     version: number;

@@ -62,8 +62,11 @@ test('staff reschedule one day and cancel another; the member sees both changes'
   await page.getByRole('button', { name: 'บันทึก', exact: true }).click();
   await expect(page.getByText('เลื่อนวันเรียนแล้ว และแจ้งผู้ลงทะเบียนแล้ว')).toBeVisible();
   const dayTwo = page.getByRole('listitem').filter({ has: page.getByText('จัดการ', { exact: true }) }).first();
-  await dayTwo.getByText('จัดการ', { exact: true }).click();
-  await expect(dayTwo.locator('details')).toHaveJSProperty('open', true);
+  // The run reloads after the reschedule and can re-render the row, so reopen the menu until it stays open.
+  await expect(async () => {
+    if (!(await dayTwo.locator('details').evaluate((d: HTMLDetailsElement) => d.open))) await dayTwo.getByText('จัดการ', { exact: true }).click();
+    await expect(dayTwo.getByRole('button', { name: 'ยกเลิกวันเรียน' })).toBeVisible({ timeout: 1000 });
+  }).toPass({ timeout: 10000 });
   await dayTwo.getByRole('button', { name: 'ยกเลิกวันเรียน' }).click();
   await page.getByLabel(/เหตุผลที่ยกเลิก/).fill('วิทยากรป่วย');
   await page.getByRole('button', { name: 'ยืนยันยกเลิกวันเรียน' }).click();

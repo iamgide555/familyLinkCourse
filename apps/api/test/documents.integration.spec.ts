@@ -1,3 +1,4 @@
+import { validCitizenId } from './helpers.js';
 import request from 'supertest';
 import { hash } from 'argon2';
 import { readFile } from 'node:fs/promises';
@@ -217,7 +218,7 @@ describe('document uploads, consent and permissions', () => {
     const receipt = await upload(draft, await jpeg(), undefined, token);
     expect(receipt.status).toBe(201);
     const signup = await http().post('/api/member/signup').send({
-      inviteToken: token, draftId: draft.draftId, draftToken: draft.draftToken, firstName: 'แนบไฟล์', lastName: 'ทดสอบ',
+      citizenId: validCitizenId(), inviteToken: token, draftId: draft.draftId, draftToken: draft.draftToken, firstName: 'แนบไฟล์', lastName: 'ทดสอบ',
       birthDate: '1991-03-04', phoneMobile: '0812345678', memberType: 'caregiver', provinceId: 'กระบี่', districtId: 'เกาะลันตา',
       requestedServiceIds: [serviceTypeId], registeringFor: 'self', privacyConsent: consent,
     });
@@ -242,7 +243,7 @@ describe('document uploads, consent and permissions', () => {
   it('a signup without attachments never needs the sensitive-data consent', async () => {
     const invite = await as(staff, 'post', '/api/member/invites').send({ mode: 'signup' });
     const signup = await http().post('/api/member/signup').send({
-      inviteToken: invite.body.token, firstName: 'ไม่แนบ', lastName: 'ไฟล์', birthDate: '1993-03-04', phoneMobile: '0812345679',
+      citizenId: validCitizenId(), inviteToken: invite.body.token, firstName: 'ไม่แนบ', lastName: 'ไฟล์', birthDate: '1993-03-04', phoneMobile: '0812345679',
       memberType: 'disabled', provinceId: 'กระบี่', districtId: 'เกาะลันตา', requestedServiceIds: [serviceTypeId], registeringFor: 'self', privacyConsent: consent,
     });
     expect(signup.status).toBe(201);

@@ -1,4 +1,4 @@
-import { goStaff } from './helpers';
+import { goStaff, citizenId } from './helpers';
 import { test, expect, type Page } from '@playwright/test';
 
 async function openSyntheticMember(page: Page) {
@@ -10,6 +10,8 @@ async function openSyntheticMember(page: Page) {
   await goStaff(page, 'เพิ่มสมาชิกจากใบสมัคร');
   await page.getByLabel('ชื่อ', { exact: true }).fill(`แบบคำขอ${Date.now()}`);
   await page.getByLabel('นามสกุล', { exact: true }).fill('ทดสอบ');
+  await page.getByLabel('วันเกิด (ค.ศ.)', { exact: true }).fill('1985-05-05');
+  await page.getByLabel('เลขบัตรประชาชน', { exact: true }).fill(citizenId());
   await page.getByRole('button', { name: 'บันทึกสมาชิก', exact: true }).click();
   await expect(page.getByRole('heading', { name: /แบบคำขอ.*ทดสอบ/ })).toBeVisible();
 }

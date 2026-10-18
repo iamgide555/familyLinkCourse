@@ -2,19 +2,19 @@
 version: 1
 slug: "apps-web-src-styles-css"
 primary_target: "apps/web/src/styles.css"
-related_targets: ["apps/web/src/app/staff/staff-layout.component.ts"]
+related_targets: ["apps/web/src/app/staff/staff-layout.component.ts","apps/web/src/main.ts"]
 ---
 
 ## Direction contract
 
-THESIS: FamilyLink is a numbered clinic queue ticket, not a SaaS card grid. Every page is a thermal sheet on a mint waiting-hall ground; registrations are tickets torn along a dashed perforation. Refuses white rounded cards with outlined-button grids and teal everywhere.
+THESIS: FamilyLink talks like a chat from the association. System messages are bubbles, items are flex-message cards, people are a friend list with avatars, the daily jobs are a rich-menu tab bar. Refuses the ticket/paper look and the white-card admin dashboard.
 
-OWN-WORLD: Ground #dce8e5, sheet #fbfcfb, green ink #14201d, one teal action voice (press-me only), one amber attention voice. Kanit tabular numerals as the largest thing in a region. 2px dashed perforation tear lines with punched half-circle notches at both edges. Status = drawn glyph + word + border form (solid confirmed, dashed submitted, double amber waitlist, dotted struck cancelled). Current place is ink-filled, never teal. One soft ticket shadow.
+OWN-WORLD: LINE green #06c755 for the one main action (dark ink on it, never white), deep green #067d34 for links and active tabs, blue-grey chat wallpaper #dde5ef, white panes, soft #f1f4f8 bubbles. Dark mode: near-black #0e1116 ground, #1a1e26 panes, mint #42e08a action. Kanit headings and numerals, Sarabun body. Status chips with drawn glyph + word. Avatar circles with initials. Left tab rail on desktop, bottom tab bar on phones.
 
-STORY: Older, low-tech staff and caregivers see a familiar paper queue ticket: they read state from the word and form, find the one loud action, and trust that nothing is hidden.
+STORY: People who already live in LINE recognise the grammar at once: read the bubble, press the one green button, check the tab bar for where you are.
 
-FIRST VIEWPORT: Staff: four daily links in a bar (current in ink), then a sheet whose h1 is torn off by a perforation; the task below. Member: LINE tabs, then the same torn sheet; registrations are tickets with course header, tear line, entry rows with status pills.
+FIRST VIEWPORT: Staff desktop: header bar with green mark, left rail of four job tabs (สมาชิก, วันนี้, คอร์ส, รายงานและตั้งค่า) and a row of sibling-page chips, white pane with page title, an intro bubble, search, friend-list rows. Phone: same pane full width with a bottom tab bar. Member: bottom tab bar of three tabs, flex-card registrations.
 
-FORM: Restored documented prototype world "The Clinic Queue Ticket" (docs/archives/DESIGN.md); user-pinned direction, no roll. Code-led. Seed key: none (pinned).
+FORM: User pinned "LINE-like" after seeing the pick card of hand 2 (The LINE Conversation); user-pinned direction, no roll. Code-led. Seed key: 47753428. Motion: transform-only arrivals, press feedback, reduced-motion off.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
