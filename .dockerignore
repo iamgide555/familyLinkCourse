@@ -1,0 +1,14 @@
+node_modules
+dist
+.git
+.env
+.env.*
+!.env.example
+.private
+test-results
+playwright-report
+apps/*/node_modules
+apps/web/.angular
+*.log
+prototype
+docs

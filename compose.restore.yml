@@ -1,0 +1,18 @@
+# Isolated restore rehearsal. Nothing here shares a network, volume or credentials with the live stack.
+#   docker compose -f compose.restore.yml --profile restore run --rm restore /backups/db/<file>.dump /staging/uploads
+name: familylink-restore
+services:
+  restore-db:
+    image: postgres:16
+    environment: { POSTGRES_USER: staging, POSTGRES_PASSWORD: staging-only, POSTGRES_DB: postgres }
+    tmpfs: ["/var/lib/postgresql/data"]
+    ports: ["127.0.0.1:55433:5432"]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U staging"], interval: 3s, timeout: 3s, retries: 20 }
+    profiles: [restore]
+  restore:
+    build: { context: ., dockerfile: infra/backup/Dockerfile }
+    entrypoint: ["/usr/local/bin/restore.sh"]
+    environment: { STAGING_PGHOST: restore-db, STAGING_PGUSER: staging, STAGING_PGPASSWORD: staging-only, STAGING_PGDATABASE: familylink_staging }
+    volumes: ["${BACKUP_DIR:?set BACKUP_DIR}:/backups:ro", "./.private/restore-staging:/staging"]
+    depends_on: { restore-db: { condition: service_healthy } }
+    profiles: [restore]

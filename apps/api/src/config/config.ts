@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 export const APP_CONFIG = Symbol('APP_CONFIG');
 export interface ApplicationConfig {
   databaseUrl: string;
@@ -7,8 +8,29 @@ export interface ApplicationConfig {
   encryptionKey: Buffer;
   blindIndexKey: Buffer;
   sessionSecret: Buffer;
+  devIdentityEnabled?: boolean;
+  documentStorePath?: string;
+  /** Real LINE integration. Absent in development, where delivery is simulated. */
+  line?: LineConfig;
+  email?: EmailConfig;
+  schedulerEnabled?: boolean;
+  schedulerIntervalMs?: number;
+  /** While this file exists, writes are refused so a backup can capture a consistent database and file set. */
+  maintenanceFlag?: string;
 }
+export type LineConfig = {
+  channelAccessToken: string;
+  channelSecret: string;
+  loginChannelId: string;
+  liffId: string;
+  apiBase: string;
+  richMenuMemberId: string;
+  monthlyQuota: number | null;
+};
+export type EmailConfig = { apiKey: string; from: string; apiBase: string };
 export function validateConfig(config: ApplicationConfig): void {
+  if (config.production && config.devIdentityEnabled)
+    throw new Error('Development identity is forbidden in production');
   for (const [name, key] of Object.entries({
     encryptionKey: config.encryptionKey,
     blindIndexKey: config.blindIndexKey,
@@ -28,6 +50,15 @@ export function validateConfig(config: ApplicationConfig): void {
   const origin = new URL(config.webOrigin);
   if (origin.origin !== config.webOrigin || (config.production && origin.protocol !== 'https:'))
     throw new Error('Invalid web origin');
+  if (config.production) {
+    // Production fails closed: real identity verification and real delivery must be configured.
+    const line = config.line;
+    if (!line?.channelAccessToken || !line.channelSecret || !line.loginChannelId || !line.liffId)
+      throw new Error('LINE configuration is required in production');
+    if (!/^https:\/\//.test(line.apiBase)) throw new Error('LINE API base must be https in production');
+    if (!config.email?.apiKey || !config.email.from) throw new Error('Email configuration is required in production');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(config.email.from)) throw new Error('Email sender address is invalid');
+  }
 }
 export function loadConfig(env: NodeJS.ProcessEnv): ApplicationConfig {
   const key = (name: string): Buffer => {
@@ -47,6 +78,25 @@ export function loadConfig(env: NodeJS.ProcessEnv): ApplicationConfig {
     encryptionKey: key('FIELD_ENCRYPTION_KEY'),
     blindIndexKey: key('BLIND_INDEX_KEY'),
     sessionSecret: key('SESSION_SECRET'),
+    devIdentityEnabled: ['development', 'test'].includes(env['NODE_ENV'] ?? '') && env['DEV_IDENTITY_ENABLED'] === 'true',
+    documentStorePath: resolve(env['DOCUMENT_STORE_PATH'] ?? '.private/documents'),
+    schedulerEnabled: env['SCHEDULER_ENABLED'] !== 'false',
+    ...(env['SCHEDULER_INTERVAL_MS'] ? { schedulerIntervalMs: Number(env['SCHEDULER_INTERVAL_MS']) } : {}),
+    ...(env['MAINTENANCE_FLAG'] ? { maintenanceFlag: resolve(env['MAINTENANCE_FLAG']) } : {}),
+    ...(env['LINE_CHANNEL_ACCESS_TOKEN']
+      ? { line: {
+          channelAccessToken: env['LINE_CHANNEL_ACCESS_TOKEN'].trim(),
+          channelSecret: (env['LINE_CHANNEL_SECRET'] ?? '').trim(),
+          loginChannelId: (env['LINE_LOGIN_CHANNEL_ID'] ?? '').trim(),
+          liffId: (env['LINE_LIFF_ID'] ?? '').trim(),
+          apiBase: (env['LINE_API_BASE'] ?? 'https://api.line.me').trim().replace(/\/$/, ''),
+          richMenuMemberId: (env['LINE_RICH_MENU_MEMBER'] ?? '').trim(),
+          monthlyQuota: env['LINE_MONTHLY_QUOTA'] ? Number(env['LINE_MONTHLY_QUOTA']) : null,
+        } }
+      : {}),
+    ...(env['EMAIL_API_KEY']
+      ? { email: { apiKey: env['EMAIL_API_KEY'].trim(), from: (env['EMAIL_FROM'] ?? '').trim(), apiBase: (env['EMAIL_API_BASE'] ?? 'https://api.resend.com').trim().replace(/\/$/, '') } }
+      : {}),
   };
   validateConfig(config);
   return config;

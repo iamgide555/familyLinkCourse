@@ -14,7 +14,7 @@
 
 ## Progress Checklist
 
-**Updated:** 17 October 2026. **Implementation:** 1 of 18 tasks verified complete. Check a build task only after its implementation and verification steps pass; update this summary alongside the detailed task checkboxes.
+**Updated:** 17 October 2026. **Implementation:** 15 of 18 tasks built and verified in software (18 Oct 2026); M5-T1, M5-T2 and M5-T3 each keep a real-account or server verification step. Check a build task only after its implementation and verification steps pass; update this summary alongside the detailed task checkboxes.
 
 ### Planning
 
@@ -24,48 +24,48 @@
 - [x] **Document checks:** verify headings, task steps, interfaces and plan links.
 - [x] **Execution handoff:** user authorized implementation; native execution started with TDD and UX review.
 
-### M1: Staff Intake — 1 of 4
+### M1: Staff Intake — 4 of 4
 
-**Details:** [Staff intake plan](2026-10-17-01-staff-intake.md).
+**Details:** [Staff intake plan](../archives/plans/2026-10-17-01-staff-intake.md).
 
 - [x] **M1-T1:** authenticated staff shell and protected persistence.
-- [ ] **M1-T2:** paper intake, member search, profiles and configuration.
-- [ ] **M1-T3:** case notes with encrypted revisions.
-- [ ] **M1-T4:** printable signup form and signature receipt.
+- [x] **M1-T2:** paper intake, member search, profiles and configuration.
+- [x] **M1-T3:** case notes with encrypted revisions.
+- [x] **M1-T4:** printable signup form and signature receipt.
 
-### M2: Member Self-Service — 0 of 4
+### M2: Member Self-Service — 4 of 4
 
-**Details:** [Member self-service plan](2026-10-17-02-member-self-service.md).
+**Details:** [Member self-service plan](../archives/plans/2026-10-17-02-member-self-service.md).
 
-- [ ] **M2-T1:** signup, invites, match queue and simulated identity.
-- [ ] **M2-T2:** upload consent, processing and document permissions.
-- [ ] **M2-T3:** staff review, caregiver links and profile changes.
-- [ ] **M2-T4:** complete signup and family profile screens.
+- [x] **M2-T1:** signup, invites, match queue and simulated identity.
+- [x] **M2-T2:** upload consent, processing and document permissions.
+- [x] **M2-T3:** staff review, caregiver links and profile changes.
+- [x] **M2-T4:** complete signup and family profile screens.
 
-### M3: Course Booking — 0 of 4
+### M3: Course Booking — 4 of 4
 
-**Details:** [Course booking plan](2026-10-17-03-course-booking.md).
+**Details:** [Course booking plan](../archives/plans/2026-10-17-03-course-booking.md).
 
-- [ ] **M3-T1:** course, run, session and question configuration.
-- [ ] **M3-T2:** transactional registration, approval and snapshot versions.
-- [ ] **M3-T3:** cancellation, rescheduling and safe capacity changes.
-- [ ] **M3-T4:** atomic walk-in intake, booking and today's attendance.
+- [x] **M3-T1:** course, run, session and question configuration.
+- [x] **M3-T2:** transactional registration, approval and snapshot versions.
+- [x] **M3-T3:** cancellation, rescheduling and safe capacity changes.
+- [x] **M3-T4:** atomic walk-in intake, booking and today's attendance.
 
-### M4: Staff Operations — 0 of 3
+### M4: Staff Operations — 3 of 3
 
-**Details:** [Staff operations plan](2026-10-17-04-staff-operations.md).
+**Details:** [Staff operations plan](../archives/plans/2026-10-17-04-staff-operations.md).
 
-- [ ] **M4-T1:** attendance, dashboard and run form printing.
-- [ ] **M4-T2:** offline paid membership and renewal records.
-- [ ] **M4-T3:** role-safe Excel, filters and organization settings.
+- [x] **M4-T1:** attendance, dashboard and run form printing.
+- [x] **M4-T2:** offline paid membership and renewal records.
+- [x] **M4-T3:** role-safe Excel, filters and organization settings.
 
 ### M5: Integration and Launch — 0 of 3
 
 **Details:** [Integration and launch plan](2026-10-17-05-integration-and-launch.md).
 
-- [ ] **M5-T1:** real LINE identity, menus and webhooks.
-- [ ] **M5-T2:** outbox delivery, fallback, reminders and staff follow-up.
-- [ ] **M5-T3:** deployment, recovery, cleanup and staff acceptance.
+- [ ] **M5-T1:** real LINE identity, menus and webhooks. *Software done and tested against stubs; needs FamilyLink's LINE accounts for the real check.*
+- [ ] **M5-T2:** outbox delivery, fallback, reminders and staff follow-up. *Software done; real LINE/email proof pending.*
+- [ ] **M5-T3:** deployment, recovery, cleanup and staff acceptance. *Stack, scripts, runbook and checklist built; images build; needs the server, real secrets, restore rehearsal and the December dry run.*
 
 ### Final Acceptance
 
@@ -133,10 +133,10 @@
 
 | Order | Working deliverable | Proposed target | Detailed plan |
 | --- | --- | --- | --- |
-| M1 | Staff log in, create/search/open paper member, write notes and print signup form | 30 Oct | [Staff intake](2026-10-17-01-staff-intake.md) |
-| M2 | Website signup, invites, uploads, caregiver linking and profile review using simulated member identities | 13 Nov | [Member self-service](2026-10-17-02-member-self-service.md) |
-| M3 | Courses, configurable questions, seats, approvals, queues, cancellations and walk-ins | 27 Nov | [Course booking](2026-10-17-03-course-booking.md) |
-| M4 | Attendance, paid membership, dashboard and Excel exports | 4 Dec | [Staff operations](2026-10-17-04-staff-operations.md) |
+| M1 | Staff log in, create/search/open paper member, write notes and print signup form | 30 Oct | [Staff intake](../archives/plans/2026-10-17-01-staff-intake.md) |
+| M2 | Website signup, invites, uploads, caregiver linking and profile review using simulated member identities | 13 Nov | [Member self-service](../archives/plans/2026-10-17-02-member-self-service.md) |
+| M3 | Courses, configurable questions, seats, approvals, queues, cancellations and walk-ins | 27 Nov | [Course booking](../archives/plans/2026-10-17-03-course-booking.md) |
+| M4 | Attendance, paid membership, dashboard and Excel exports | 4 Dec | [Staff operations](../archives/plans/2026-10-17-04-staff-operations.md) |
 | M5 | Real LINE/email integration, reliable reminders, deployment and restore proof | 18 Dec | [Integration and launch](2026-10-17-05-integration-and-launch.md) |
 | Acceptance | Staff exercise every POC area; resolve workflow-blocking failures | Dry-run 19–23 Dec; ready by 31 Dec | M5-T3 |
 

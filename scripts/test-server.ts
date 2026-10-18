@@ -14,10 +14,14 @@ async function main() {
       databaseUrl,
       organizationId,
       production: false,
-      webOrigin: 'http://127.0.0.1:4200',
+      webOrigin: process.env['TEST_WEB_ORIGIN'] ?? 'http://127.0.0.1:4200',
       encryptionKey: Buffer.alloc(32, 11),
       blindIndexKey: Buffer.alloc(32, 22),
       sessionSecret: Buffer.alloc(32, 33),
+      devIdentityEnabled: true,
+      schedulerEnabled: true,
+      schedulerIntervalMs: 1000,
+      documentStorePath: process.env['TEST_DOCUMENT_STORE'] ?? '.private/test-documents',
     },
     new SystemClock(),
   );
@@ -38,6 +42,10 @@ async function main() {
     },
     update: { active: true, role: 'admin' },
   });
+  for (const name of ['บริการทดสอบ ก', 'บริการทดสอบ ข'])
+    await db.serviceType.upsert({ where: { organizationId_name: { organizationId, name } }, create: { organizationId, name }, update: { active: true } });
+  for (const name of ['บัตรประชาชน', 'ใบรับรองแพทย์'])
+    await db.documentType.upsert({ where: { organizationId_name: { organizationId, name } }, create: { organizationId, name }, update: { active: true } });
   await app.listen(3101, '127.0.0.1');
 }
 main().catch((error) => {

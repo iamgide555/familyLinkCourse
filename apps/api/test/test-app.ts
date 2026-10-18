@@ -1,9 +1,13 @@
 import 'reflect-metadata';
 import { randomUUID } from 'node:crypto';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import type { INestApplication } from '@nestjs/common';
 import { createApplication } from '../src/app.module.js';
 import { PrismaService } from '../src/database/prisma.service.js';
 import { Clock } from '../src/common/clock.js';
+import type { ApplicationConfig } from '../src/config/config.js';
 
 export class MutableClock extends Clock {
   private instant = new Date('2026-10-17T03:00:00.000Z');
@@ -24,8 +28,9 @@ export type TestApp = {
   organizationId: string;
   close(): Promise<void>;
 };
-export async function createTestApp(): Promise<TestApp> {
+export async function createTestApp(overrides: Partial<ApplicationConfig> = {}): Promise<TestApp> {
   const organizationId = randomUUID();
+  const documentStorePath = await mkdtemp(join(tmpdir(), 'familylink-documents-test-'));
   const clock = new MutableClock();
   const app = await createApplication(
     {
@@ -38,6 +43,9 @@ export async function createTestApp(): Promise<TestApp> {
       encryptionKey: Buffer.alloc(32, 11),
       blindIndexKey: Buffer.alloc(32, 22),
       sessionSecret: Buffer.alloc(32, 33),
+      devIdentityEnabled: true,
+      documentStorePath,
+      ...overrides,
     },
     clock,
   );
@@ -50,8 +58,12 @@ export async function createTestApp(): Promise<TestApp> {
     clock,
     organizationId,
     close: async () => {
-      await db.organization.delete({ where: { id: organizationId } });
-      await app.close();
+      try {
+        await db.organization.delete({ where: { id: organizationId } });
+      } finally {
+        await app.close();
+        await rm(documentStorePath, { recursive: true, force: true });
+      }
     },
   };
 }

@@ -1,3 +1,4 @@
+import { openMore } from './helpers';
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
@@ -8,6 +9,7 @@ test('staff signs in and signs out using visible Thai controls', async ({ page }
   await page.getByLabel('รหัสผ่าน', { exact: true }).fill('Synthetic-password-2026');
   await page.getByRole('button', { name: 'เข้าสู่ระบบ', exact: true }).click();
   await expect(page).toHaveURL(/\/staff$/);
+  await openMore(page);
   await expect(page.getByText('ผู้ดูแลระบบทดสอบ', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'ออกจากระบบ' }).click();
   await expect(page).toHaveURL(/\/staff\/login/);
@@ -69,6 +71,7 @@ test('signing out after session expiry clears stale identity and returns to logi
   await page.getByRole('button', { name: 'เข้าสู่ระบบ', exact: true }).click();
   await expect(page).toHaveURL(/\/staff$/);
   await context.clearCookies();
+  await openMore(page);
   await page.getByRole('button', { name: 'ออกจากระบบ' }).click();
   await expect(page).toHaveURL(/\/staff\/login/);
   await expect(page.getByRole('alert')).toContainText('เข้าสู่ระบบอีกครั้ง');
@@ -88,10 +91,13 @@ test('login is accessible with large controls and no narrow-screen overflow', as
   expect(result.violations).toEqual([]);
 });
 
-test('server validates malformed login independently of the browser form', async ({ request }) => {
+test('server validates malformed login independently of the browser form', async ({
+  request,
+  baseURL,
+}) => {
   const result = await request.post('http://127.0.0.1:3101/api/auth/login', {
     data: { email: 123, password: ['invalid'] },
-    headers: { Origin: 'http://127.0.0.1:4200' },
+    headers: { Origin: new URL(baseURL!).origin },
   });
   expect(result.status()).toBe(422);
 });

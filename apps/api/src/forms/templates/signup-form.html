@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; font-src data:" />
+    <title>แบบคำขอรับบริการ</title>
+    <style>
+      @font-face { font-family: Sarabun; font-style: normal; font-weight: 400; src: url(data:font/woff2;base64,{{FONT400THAI}}) format('woff2'); unicode-range: U+0E00-0E7F; }
+      @font-face { font-family: Sarabun; font-style: normal; font-weight: 400; src: url(data:font/woff2;base64,{{FONT400LATIN}}) format('woff2'); unicode-range: U+0000-00FF; }
+      @font-face { font-family: Sarabun; font-style: normal; font-weight: 600; src: url(data:font/woff2;base64,{{FONT600THAI}}) format('woff2'); unicode-range: U+0E00-0E7F; }
+      @font-face { font-family: Sarabun; font-style: normal; font-weight: 600; src: url(data:font/woff2;base64,{{FONT600LATIN}}) format('woff2'); unicode-range: U+0000-00FF; }
+      @page { size: A4; margin: 15mm 16mm 25mm; }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body { font-family: Sarabun, sans-serif; color: #172b35; font-size: 10.5pt; line-height: 1.45; }
+      .form + .form { break-before: page; page-break-before: always; }
+      .heading { border-bottom: 2px solid #194d58; padding-bottom: 4mm; margin-bottom: 5mm; }
+      h1 { font-size: 17pt; line-height: 1.25; margin: 0 0 1mm; }
+      h2 { font-size: 12pt; margin: 0 0 3mm; color: #194d58; }
+      h3 { font-size: 10.5pt; margin: 0 0 2mm; }
+      p { margin: 0; }
+      .small { font-size: 8.5pt; color: #53646b; }
+      .section { break-inside: avoid; margin-bottom: 5mm; }
+      .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2mm 5mm; }
+      .field { min-width: 0; padding: 1.2mm 0; border-bottom: 1px solid #bac9ce; break-inside: avoid; }
+      .field.full { grid-column: 1 / -1; }
+      .label { display: block; font-size: 8.5pt; color: #53646b; }
+      .value { display: block; min-height: 5mm; overflow-wrap: anywhere; word-break: break-word; white-space: pre-wrap; }
+      .blank-lines { height: 10mm; border-bottom: 1px solid #bac9ce; }
+      .signatures { margin-top: 7mm; display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; break-inside: avoid; }
+      .signature { padding-top: 14mm; border-top: 1px solid #61777f; text-align: center; min-height: 29mm; }
+      .signature p { font-size: 9pt; }
+    </style>
+  </head>
+  <body>{{FORMS}}</body>
+</html>

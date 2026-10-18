@@ -1,0 +1,354 @@
+<main id="main-content" class="member-workspace intake-workspace">
+  <a class="back-link" routerLink="/staff">กลับไปหน้ารายชื่อ</a>
+  <h1>{{ id ? 'แก้ไขข้อมูลสมาชิก' : 'เพิ่มสมาชิกจากใบสมัคร' }}</h1>
+  <p class="page-intro">
+    กรอกชื่อและนามสกุลก่อน ช่องอื่นเติมภายหลังได้ ข้อมูลจะบันทึกเมื่อกดปุ่มด้านล่าง
+  </p>
+  @if (error()) {
+    <div role="alert" class="notice notice-error">{{ error() }}</div>
+  }
+  @if (conflict()) {
+    <p>ค่าที่คุณกรอกยังอยู่ในหน้านี้ กรุณาคัดลอกข้อมูลที่ต้องการเก็บก่อนโหลดข้อมูลล่าสุด</p>
+    <button type="button" class="button-secondary" (click)="loadMember()">โหลดข้อมูลล่าสุด</button>
+  }
+  @if (loading()) {
+    <p role="status">กำลังเปิดข้อมูลสมาชิก…</p>
+  } @else if (!loaded()) {
+    <button type="button" class="button-secondary" (click)="loadMember()">ลองอีกครั้ง</button>
+  } @else {
+    @if (referenceError()) {
+      <p role="alert">{{ referenceError() }}</p>
+      <button type="button" class="button-secondary" (click)="loadReferences()">ลองเปิดรายการอีกครั้ง</button>
+    }
+    <form (ngSubmit)="save()" novalidate [attr.aria-busy]="busy()">
+      <fieldset [disabled]="busy()">
+        <legend class="sr-only">ข้อมูลจากใบสมัครกระดาษ</legend>
+        <section class="intake-section" aria-labelledby="basic-title">
+          <h2 id="basic-title">ชื่อและข้อมูลติดต่อ</h2>
+          <div class="form-grid">
+            @for (field of basic; track field.key) {
+              <div class="intake-field">
+                <label [for]="field.key">{{ field.label }}</label>
+                @if (field.hint) {
+                  <p class="field-hint" [id]="field.key + '-hint'">{{ field.hint }}</p>
+                }
+                <input
+                  [id]="field.key"
+                  [name]="field.key"
+                  [type]="field.type || 'text'"
+                  [(ngModel)]="data[field.key]"
+                  [attr.maxlength]="field.max || null"
+                  [required]="field.key === 'firstName' || field.key === 'lastName'"
+                  [attr.aria-invalid]="fieldErrors()[field.key] ? 'true' : null"
+                  [attr.aria-describedby]="
+                    fieldErrors()[field.key]
+                      ? field.key + '-error'
+                      : field.hint
+                        ? field.key + '-hint'
+                        : null
+                  "
+                />
+                @if (fieldErrors()[field.key]) {
+                  <p class="field-error" [id]="field.key + '-error'">
+                    {{ fieldErrors()[field.key] }}
+                  </p>
+                }
+              </div>
+            }
+            <div class="intake-field">
+              <label for="memberType">ประเภทสมาชิก</label
+              ><select id="memberType" name="memberType" [(ngModel)]="data.memberType">
+                <option value="">ยังไม่ระบุ</option>
+                <option value="caregiver">ผู้ดูแล</option>
+                <option value="disabled">คนพิการ</option>
+                <option value="at_risk">ผู้มีแนวโน้มจะพิการ</option>
+              </select>
+            </div>
+          </div>
+        </section>
+        <details class="intake-section" aria-labelledby="personal-title">
+          <summary>
+            <h2 id="personal-title">ข้อมูลเพิ่มเติมจากใบสมัคร</h2>
+            <span>กดเพื่อเปิดหรือปิดช่องเพิ่มเติม</span>
+          </summary>
+          <p class="section-intro">หากไม่มีข้อมูลในใบสมัคร ให้เว้นว่างไว้</p>
+          <div class="intake-field">
+            <label for="address">ที่อยู่ตามใบสมัคร</label
+            ><textarea
+              id="address"
+              name="address"
+              rows="3"
+              maxlength="2000"
+              [(ngModel)]="data.address"
+              [attr.aria-invalid]="fieldErrors()['address'] ? 'true' : null"
+              [attr.aria-describedby]="fieldErrors()['address'] ? 'address-error' : null"
+            ></textarea>
+            @if (fieldErrors()['address']) { <p class="field-error" id="address-error">{{ fieldErrors()['address'] }}</p> }
+          </div>
+          <div class="form-grid">
+            <div class="intake-field">
+              <label for="provinceId">จังหวัด</label>
+              <select id="provinceId" name="provinceId" [(ngModel)]="data.provinceId" (ngModelChange)="provinceChanged()"
+                [attr.aria-invalid]="fieldErrors()['provinceId'] ? 'true' : null"
+                [attr.aria-describedby]="fieldErrors()['provinceId'] ? 'provinceId-error' : null">
+                <option value="">ยังไม่ระบุ</option>
+                @for (name of provinces(); track name) { <option [value]="name">{{ name }}</option> }
+              </select>
+              @if (fieldErrors()['provinceId']) { <p class="field-error" id="provinceId-error">{{ fieldErrors()['provinceId'] }}</p> }
+            </div>
+            <div class="intake-field">
+              <label for="districtId">อำเภอหรือเขต</label>
+              <select id="districtId" name="districtId" [(ngModel)]="data.districtId" (ngModelChange)="districtChanged()"
+                [disabled]="!data.provinceId"
+                [attr.aria-invalid]="fieldErrors()['districtId'] ? 'true' : null"
+                [attr.aria-describedby]="fieldErrors()['districtId'] ? 'districtId-error' : null">
+                <option value="">ยังไม่ระบุ</option>
+                @for (name of districts(); track name) { <option [value]="name">{{ name }}</option> }
+              </select>
+              @if (fieldErrors()['districtId']) { <p class="field-error" id="districtId-error">{{ fieldErrors()['districtId'] }}</p> }
+            </div>
+            <div class="intake-field">
+              <label for="subdistrictId">ตำบลหรือแขวง</label>
+              <select id="subdistrictId" name="subdistrictId" [(ngModel)]="data.subdistrictId" (ngModelChange)="subdistrictChanged()"
+                [disabled]="!data.districtId"
+                [attr.aria-invalid]="fieldErrors()['subdistrictId'] ? 'true' : null"
+                [attr.aria-describedby]="fieldErrors()['subdistrictId'] ? 'subdistrictId-error' : null">
+                <option value="">ยังไม่ระบุ</option>
+                @for (item of subdistricts(); track item.name) { <option [value]="item.name">{{ item.name }}</option> }
+              </select>
+              @if (fieldErrors()['subdistrictId']) { <p class="field-error" id="subdistrictId-error">{{ fieldErrors()['subdistrictId'] }}</p> }
+            </div>
+            <div class="intake-field">
+              <label for="postcode">รหัสไปรษณีย์</label>
+              <select id="postcode" name="postcode" [(ngModel)]="data.postcode" [disabled]="!data.subdistrictId"
+                [attr.aria-invalid]="fieldErrors()['postcode'] ? 'true' : null"
+                [attr.aria-describedby]="fieldErrors()['postcode'] ? 'postcode-error' : null">
+                <option value="">ยังไม่ระบุ</option>
+                @for (code of postcodes(); track code) { <option [value]="code">{{ code }}</option> }
+              </select>
+              @if (fieldErrors()['postcode']) { <p class="field-error" id="postcode-error">{{ fieldErrors()['postcode'] }}</p> }
+            </div>
+          </div>
+          <div class="form-grid">
+            @for (field of personal; track field.key) {
+              <div class="intake-field">
+                <label [for]="field.key">{{ field.label }}</label>
+                @if (field.hint) {
+                  <p class="field-hint" [id]="field.key + '-hint'">{{ field.hint }}</p>
+                }
+                <input
+                  [id]="field.key"
+                  [name]="field.key"
+                  [type]="field.type || 'text'"
+                  [(ngModel)]="data[field.key]"
+                  [attr.maxlength]="field.max || null"
+                  [attr.aria-invalid]="fieldErrors()[field.key] ? 'true' : null"
+                  [attr.aria-describedby]="
+                    fieldErrors()[field.key]
+                      ? field.key + '-error'
+                      : field.hint
+                        ? field.key + '-hint'
+                        : null
+                  "
+                />
+                @if (fieldErrors()[field.key]) {
+                  <p class="field-error" [id]="field.key + '-error'">
+                    {{ fieldErrors()[field.key] }}
+                  </p>
+                }
+              </div>
+            }
+            <div class="intake-field">
+              <label for="householdSize">จำนวนคนในครัวเรือน</label
+              ><input
+                id="householdSize"
+                name="householdSize"
+                type="number"
+                min="0"
+                max="1000"
+                [(ngModel)]="data.householdSize"
+                [attr.aria-invalid]="fieldErrors()['householdSize'] ? 'true' : null"
+                [attr.aria-describedby]="fieldErrors()['householdSize'] ? 'householdSize-error' : null"
+              />
+              @if (fieldErrors()['householdSize']) { <p class="field-error" id="householdSize-error">{{ fieldErrors()['householdSize'] }}</p> }
+            </div>
+            <div class="intake-field">
+              <label for="householdEarners">จำนวนผู้มีรายได้ในครัวเรือน</label
+              ><input
+                id="householdEarners"
+                name="householdEarners"
+                type="number"
+                min="0"
+                max="1000"
+                [(ngModel)]="data.householdEarners"
+                [attr.aria-invalid]="fieldErrors()['householdEarners'] ? 'true' : null"
+                [attr.aria-describedby]="fieldErrors()['householdEarners'] ? 'householdEarners-error' : null"
+              />
+              @if (fieldErrors()['householdEarners']) { <p class="field-error" id="householdEarners-error">{{ fieldErrors()['householdEarners'] }}</p> }
+            </div>
+          </div>
+        </details>
+        <details class="intake-section" aria-labelledby="services-title">
+          <summary><h2 id="services-title">บริการที่สมาชิกต้องการ</h2><span>กดเพื่อเลือกบริการ</span></summary>
+          @if (!serviceTypes().length) { <p>ยังไม่มีรายการบริการ กรุณาให้ผู้ดูแลระบบเพิ่มตามใบสมัคร</p> }
+          @for (service of serviceTypes(); track service.id) {
+            @if (service.active || hasService(service.id)) {
+              <label class="intake-choice">
+                <input type="checkbox" [name]="'service-' + service.id" [checked]="hasService(service.id)"
+                  (change)="toggleService(service.id, $any($event.target).checked)" />{{ service.name }}
+                @if (!service.active) { <span>(ปิดใช้งานแล้ว)</span> }
+              </label>
+            }
+          }
+          @if (fieldErrors()['requestedServiceIds']) { <p class="field-error" role="alert">{{ fieldErrors()['requestedServiceIds'] }}</p> }
+        </details>
+        <details class="intake-section" aria-labelledby="contacts-title">
+          <summary>
+            <h2 id="contacts-title">ผู้ดูแลและผู้ติดต่อฉุกเฉิน</h2>
+            <span>กดเพื่อเปิดหรือปิดช่องเพิ่มเติม</span>
+          </summary>
+          <p class="section-intro">
+            เลือกผู้ดูแลที่เป็นสมาชิกอยู่แล้ว หรือกรอกชื่อผู้ดูแลด้านล่าง
+            เบอร์โทรที่เหมือนกันจะไม่เชื่อมข้อมูลให้อัตโนมัติ
+          </p>
+          <div class="caregiver-picker">
+            @if (data.caregiverMemberId) {
+              <p role="status">
+                ผู้ดูแลที่เลือก: <strong>{{ caregiverLabel }}</strong>
+              </p>
+              <button class="button-secondary" type="button" (click)="clearCaregiver()">
+                ยกเลิกการเลือกผู้ดูแล
+              </button>
+            } @else {
+              <label for="caregiverQuery">ค้นหาผู้ดูแลที่เป็นสมาชิก</label>
+              <div class="caregiver-search">
+                <input
+                  id="caregiverQuery"
+                  name="caregiverQuery"
+                  [(ngModel)]="caregiverQuery"
+                  maxlength="150"
+                  autocomplete="off"
+                /><button
+                  type="button"
+                  class="button-secondary"
+                  [disabled]="caregiverBusy()"
+                  (click)="findCaregivers()"
+                >
+                  {{ caregiverBusy() ? 'กำลังค้นหา…' : 'ค้นหาผู้ดูแล' }}
+                </button>
+              </div>
+            }
+            @if (caregiverError()) {
+              <p role="status">{{ caregiverError() }}</p>
+            }
+            @if (caregiverResults().length) {
+              <ul class="choice-list">
+                @for (member of caregiverResults(); track member.id) {
+                  <li>
+                    <span
+                      >{{ member.firstName }} {{ member.lastName }} · {{ member.memberNumber }} ·
+                      {{ member.phoneMobile || 'ยังไม่มีเบอร์' }}</span
+                    ><button
+                      type="button"
+                      class="button-secondary"
+                      (click)="chooseCaregiver(member)"
+                    >
+                      เลือก {{ member.firstName }} {{ member.lastName }}
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+          <div class="form-grid">
+            @for (field of contacts; track field.key) {
+              <div class="intake-field">
+                <label [for]="field.key">{{ field.label }}</label>
+                @if (field.hint) {
+                  <p class="field-hint" [id]="field.key + '-hint'">{{ field.hint }}</p>
+                }
+                <input
+                  [id]="field.key"
+                  [name]="field.key"
+                  [type]="field.type || 'text'"
+                  [(ngModel)]="data[field.key]"
+                  [attr.maxlength]="field.max || null"
+                  [attr.aria-invalid]="fieldErrors()[field.key] ? 'true' : null"
+                  [attr.aria-describedby]="
+                    fieldErrors()[field.key]
+                      ? field.key + '-error'
+                      : field.hint
+                        ? field.key + '-hint'
+                        : null
+                  "
+                />
+                @if (fieldErrors()[field.key]) {
+                  <p class="field-error" [id]="field.key + '-error'">
+                    {{ fieldErrors()[field.key] }}
+                  </p>
+                }
+              </div>
+            }
+          </div>
+        </details>
+      </fieldset>
+      @if (matches().length) {
+        <section class="duplicate-review" aria-labelledby="duplicate-title">
+          <h2 id="duplicate-title" tabindex="-1">พบสมาชิกชื่อและวันเกิดตรงกัน</h2>
+          <p>
+            ตรวจสอบข้อมูลด้านล่างก่อน หากเป็นคนเดิม ให้เปิดข้อมูลเดิม หากเป็นคนละคน
+            ให้ระบุเหตุผลก่อนสร้างใหม่
+          </p>
+          <ul class="choice-list">
+            @for (member of matches(); track member.id) {
+              <li>
+                <span
+                  ><strong>{{ member.firstName }} {{ member.lastName }}</strong
+                  ><br />{{ member.memberNumber }} ·
+                  {{ member.phoneMobile || 'ยังไม่มีเบอร์มือถือ' }}</span
+                ><a
+                  class="button-secondary"
+                  [routerLink]="['/staff/members', member.id]"
+                  [attr.aria-label]="'เปิดข้อมูลเดิม ' + member.firstName + ' ' + member.lastName"
+                  >เปิดข้อมูลเดิม</a
+                >
+              </li>
+            }
+          </ul>
+          <label for="duplicateReason">เหตุผลที่สร้างสมาชิกใหม่</label>
+          <textarea
+            id="duplicateReason"
+            name="duplicateReason"
+            rows="3"
+            maxlength="1000"
+            [(ngModel)]="duplicateReason"
+            [disabled]="busy()"
+            [attr.aria-invalid]="fieldErrors()['duplicateReason'] ? 'true' : null"
+            [attr.aria-describedby]="
+              fieldErrors()['duplicateReason'] ? 'duplicateReason-error' : null
+            "
+          ></textarea>
+          @if (fieldErrors()['duplicateReason']) {
+            <p class="field-error" id="duplicateReason-error">
+              {{ fieldErrors()['duplicateReason'] }}
+            </p>
+          }
+          <button class="button-primary" type="button" [disabled]="busy()" (click)="save(true)">
+            {{ busy() ? 'กำลังบันทึก…' : 'ยืนยันสร้างสมาชิกใหม่' }}
+          </button>
+        </section>
+      }
+      <div class="form-actions">
+        @if (!matches().length) {
+          <button class="button-primary" type="submit" [disabled]="busy() || loading()">
+            {{ busy() ? 'กำลังบันทึก…' : id ? 'บันทึกการแก้ไข' : 'บันทึกสมาชิก' }}
+          </button>
+        }
+        <a class="button-secondary" [routerLink]="id ? ['/staff/members', id] : ['/staff']"
+          >ยกเลิก</a
+        >
+        <p>การบันทึกข้อมูลยังไม่ถือว่าได้รับเอกสารลงนาม</p>
+      </div>
+    </form>
+  }
+</main>

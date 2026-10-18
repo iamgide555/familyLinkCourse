@@ -1,0 +1,22 @@
+# Public entry point. HTTPS certificates are issued and renewed automatically.
+{$DOMAIN} {
+	encode gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		# LIFF loads LINE's SDK and calls LINE endpoints from the browser; everything else is first-party.
+		Content-Security-Policy "default-src 'self'; script-src 'self' https://static.line-scdn.net; connect-src 'self' https://api.line.me https://access.line.me https://liff.line.me; img-src 'self' data: blob: https://profile.line-scdn.net; style-src 'self' 'unsafe-inline'; font-src 'self'; frame-ancestors 'self'; object-src 'none'; base-uri 'self'"
+		-Server
+	}
+
+	@api path /api/*
+	handle @api {
+		reverse_proxy api:3000
+	}
+	handle {
+		reverse_proxy web:80
+	}
+}

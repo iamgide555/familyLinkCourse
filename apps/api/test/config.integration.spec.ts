@@ -43,6 +43,8 @@ describe('configuration from environment', () => {
     FIELD_ENCRYPTION_KEY: Buffer.alloc(32, 1).toString('base64'),
     BLIND_INDEX_KEY: Buffer.alloc(32, 2).toString('base64'),
     SESSION_SECRET: Buffer.alloc(32, 3).toString('base64'),
+    LINE_CHANNEL_ACCESS_TOKEN: 'synthetic-token', LINE_CHANNEL_SECRET: 'synthetic-secret', LINE_LOGIN_CHANNEL_ID: 'synthetic-login', LINE_LIFF_ID: 'synthetic-liff',
+    EMAIL_API_KEY: 'synthetic-key', EMAIL_FROM: 'noreply@example.test',
   };
   it('loads distinct explicit keys without any built-in fallback secret', () => {
     const config = loadConfig(env);
@@ -56,4 +58,13 @@ describe('configuration from environment', () => {
   it('refuses development identity configuration in production', () => {
     expect(() => loadConfig({ ...env, DEV_IDENTITY_ENABLED: 'true' })).toThrow();
   });
+});
+
+// Catches unintentionally enabling test identities or placing uploads in a public path.
+it('enables synthetic member identity only with an explicit nonproduction opt-in',()=>{
+ const env={NODE_ENV:'development',DATABASE_URL:'postgresql://localhost/example',ORGANIZATION_ID:'synthetic',WEB_ORIGIN:'http://localhost:4200',FIELD_ENCRYPTION_KEY:Buffer.alloc(32,1).toString('base64'),BLIND_INDEX_KEY:Buffer.alloc(32,2).toString('base64'),SESSION_SECRET:Buffer.alloc(32,3).toString('base64')};
+ expect(loadConfig({...env,DEV_IDENTITY_ENABLED:'true'}).devIdentityEnabled).toBe(true);
+ expect(loadConfig(env).devIdentityEnabled).toBe(false);
+ expect(loadConfig({...env,NODE_ENV:'staging',DEV_IDENTITY_ENABLED:'true'}).devIdentityEnabled).toBe(false);
+ expect(loadConfig({...env,DOCUMENT_STORE_PATH:'/private/tmp/familylink-private'}).documentStorePath).toBe('/private/tmp/familylink-private');
 });

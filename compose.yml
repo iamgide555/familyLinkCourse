@@ -1,0 +1,144 @@
+# FamilyLink production stack. Only `proxy` publishes ports; everything else stays on internal networks.
+# Secrets live in ./.env.production (never in Git, images or backups). See docs/operations/runbook.md.
+name: familylink
+
+x-restart: &restart
+  restart: unless-stopped
+
+services:
+  proxy:
+    <<: *restart
+    image: caddy:2
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env.production}
+    volumes:
+      - ./infra/proxy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [public]
+    depends_on: [web, api]
+
+  web:
+    <<: *restart
+    build:
+      context: .
+      dockerfile: infra/web/Dockerfile
+    expose: ["80"]
+    networks: [public]
+
+  api:
+    <<: *restart
+    build:
+      context: .
+      dockerfile: infra/api/Dockerfile
+    env_file: [.env.production]
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      DATABASE_URL: postgresql://familylink_app:${APP_DB_PASSWORD:?}@db:5432/${POSTGRES_DB:-familylink}
+      DOCUMENT_STORE_PATH: /data/uploads
+      MAINTENANCE_FLAG: /data/state/maintenance
+      PDF_RENDERER_URL: http://pdf:3000
+      SCHEDULER_ENABLED: "true"
+    volumes:
+      - uploads:/data/uploads
+      - state:/data/state
+    networks: [public, private, egress]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      db: { condition: service_healthy }
+      pdf: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    tmpfs: ["/tmp"]
+
+  # One-shot: applies database migrations with the owner role, then exits. The API itself cannot change the schema.
+  migrate:
+    build:
+      context: .
+      dockerfile: infra/api/Dockerfile
+      target: builder
+    command: ["npx", "prisma", "migrate", "deploy", "--config", "apps/api/prisma.config.ts"]
+    env_file: [.env.production]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-familylink_owner}:${POSTGRES_PASSWORD:?}@db:5432/${POSTGRES_DB:-familylink}
+    networks: [private]
+    depends_on:
+      db: { condition: service_healthy }
+
+  db:
+    <<: *restart
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-familylink_owner}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      POSTGRES_DB: ${POSTGRES_DB:-familylink}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./infra/db/init-roles.sh:/docker-entrypoint-initdb.d/00-roles.sh:ro
+    networks: [private]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-familylink_owner} -d ${POSTGRES_DB:-familylink}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  pdf:
+    <<: *restart
+    build:
+      context: .
+      dockerfile: infra/pdf/Dockerfile
+    networks: [private]
+    security_opt: ["no-new-privileges:true"]
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:3000/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+
+  backup:
+    <<: *restart
+    build:
+      context: .
+      dockerfile: infra/backup/Dockerfile
+    env_file: [.env.production]
+    environment:
+      TZ: Asia/Bangkok
+      PGHOST: db
+      PGUSER: ${POSTGRES_USER:-familylink_owner}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?}
+      PGDATABASE: ${POSTGRES_DB:-familylink}
+      MAINTENANCE_FLAG: /data/state/maintenance
+    volumes:
+      - uploads:/data/uploads:ro
+      - state:/data/state
+      - ${BACKUP_DIR:?set BACKUP_DIR to a path on the second disk}:/backups
+      - ${RCLONE_CONFIG_DIR:?set RCLONE_CONFIG_DIR}:/config/rclone:ro
+    networks: [private, egress]
+    depends_on:
+      db: { condition: service_healthy }
+
+volumes:
+  caddy_data:
+  caddy_config:
+  db_data:
+  uploads:
+  state:
+
+networks:
+  public: {}
+  # No route to the internet: the database and renderer are unreachable from outside.
+  private:
+    internal: true
+  # Outbound only, for LINE, email and the encrypted off-site copy.
+  egress: {}

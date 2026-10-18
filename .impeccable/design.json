@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-18T00:00:00Z",
+  "title": "Design System: FamilyLink",
+  "extensions": {
+    "colorMeta": {
+      "waiting-hall-ground": {"role": "neutral", "displayName": "Waiting-Hall Ground", "canonical": "#dce8e5", "tonalRamp": ["#24312e","#3f5550","#5f7a74","#85a099","#a8bfba","#c8d9d5","#dce8e5","#eef4f2"]},
+      "thermal-sheet": {"role": "neutral", "displayName": "Thermal Sheet", "canonical": "#fbfcfb", "tonalRamp": ["#5b6360","#7d8683","#a0a9a6","#c3cbc8","#dde3e0","#eef1ef","#f6f8f7","#fbfcfb"]},
+      "green-ink": {"role": "neutral", "displayName": "Green Ink", "canonical": "#14201d", "tonalRamp": ["#14201d","#26342f","#3f504a","#5b6c66","#7a8f88","#9fb3ad","#cfdbd7","#e9f1ee"]},
+      "control-border": {"role": "neutral", "displayName": "Control Border", "canonical": "#7a8f88", "tonalRamp": ["#26332f","#3f504a","#5b6c66","#7a8f88","#9fb3ad","#b6c8c3","#cfdbd7","#e9f1ee"]},
+      "action-teal": {"role": "primary", "displayName": "Action Teal", "canonical": "#0a6b5a", "tonalRamp": ["#043a31","#07564a","#0a6b5a","#2a8878","#5aa597","#8fc2b8","#c0ded8","#e0f0ec"]},
+      "attention-amber": {"role": "secondary", "displayName": "Attention Amber", "canonical": "#9c500c", "tonalRamp": ["#3f1f03","#5e2f04","#9c500c","#c47220","#dd9a58","#ebbd8c","#f5dbbb","#fbeedd"]},
+      "error-red": {"role": "tertiary", "displayName": "Error Red", "canonical": "#b3261e", "tonalRamp": ["#4a0f0b","#7a1914","#b3261e","#d1524b","#e3817c","#efaaa6","#f6cecb","#fbe9e7"]}
+    },
+    "typographyMeta": {
+      "headline": {"displayName": "Headline", "purpose": "Page title; the ticket header (Kanit 500)."},
+      "title": {"displayName": "Title", "purpose": "Section and ticket headings (Kanit 500)."},
+      "numeral": {"displayName": "Numeral", "purpose": "Dashboard and roster counts (Kanit 600, tabular)."},
+      "stub-numeral": {"displayName": "Stub numeral", "purpose": "Registration number on a ticket stub (Kanit 600, tabular)."},
+      "body": {"displayName": "Body", "purpose": "Running Thai text, 18px Sarabun."},
+      "label": {"displayName": "Label", "purpose": "Field labels, buttons, nav, pills (Sarabun 600)."},
+      "meta": {"displayName": "Meta", "purpose": "Hints and counts in ink-soft; 0.95rem is the text floor."}
+    },
+    "shadows": [
+      {"name": "ticket", "value": "0 1px 0 rgba(20, 32, 29, 0.12), 0 16px 30px -12px rgba(20, 32, 29, 0.45)", "purpose": "The sheet and every ticket."},
+      {"name": "notch", "value": "inset 0 3px 4px rgba(20, 32, 29, 0.3)", "purpose": "Punched half-circles at perforation ends."}
+    ],
+    "motion": [
+      {"name": "ease-out-expo", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Chevron rotation (0.16s) and button hover fill (0.14s). All motion is removed under prefers-reduced-motion."}
+    ],
+    "breakpoints": [
+      {"name": "narrow-phone", "value": "400px"},
+      {"name": "phone-small", "value": "480px"},
+      {"name": "phone", "value": "560px"},
+      {"name": "tablet", "value": "760px"}
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one loud action in a region.",
+      "html": "<button class=\"ds-btn-primary\">บันทึก</button>",
+      "css": ".ds-btn-primary { display:inline-flex; align-items:center; justify-content:center; min-height:52px; padding:11px 20px; border-radius:8px; border:1px solid var(--action,#0a6b5a); background:var(--action,#0a6b5a); color:#fff; font-weight:600; font-family:inherit; font-size:1rem; transition:background-color .14s cubic-bezier(.16,1,.3,1); } .ds-btn-primary:hover { background:var(--action-hover,#07564a); } .ds-btn-primary:focus-visible { outline:3px solid var(--action,#0a6b5a); outline-offset:4px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Supporting action: sheet fill, teal text and border.",
+      "html": "<button class=\"ds-btn-secondary\">แก้ไข</button>",
+      "css": ".ds-btn-secondary { display:inline-flex; align-items:center; justify-content:center; min-height:52px; padding:11px 20px; border-radius:8px; border:1px solid #0a6b5a; background:#fbfcfb; color:#0a6b5a; font-weight:600; font-family:inherit; font-size:1rem; } .ds-btn-secondary:hover { background:#e0f0ec; } .ds-btn-secondary:focus-visible { outline:3px solid #0a6b5a; outline-offset:4px; }"
+    },
+    {
+      "name": "Danger Outline Button",
+      "kind": "button",
+      "refersTo": "button-danger-outline",
+      "description": "Offers a destructive action; the confirm is the filled red button.",
+      "html": "<button class=\"ds-btn-danger\">ลบ</button>",
+      "css": ".ds-btn-danger { display:inline-flex; align-items:center; justify-content:center; min-height:52px; padding:11px 20px; border-radius:8px; border:1px solid #b3261e; background:#fbfcfb; color:#b3261e; font-weight:600; font-family:inherit; font-size:1rem; } .ds-btn-danger:hover { background:#fbe9e7; } .ds-btn-danger:focus-visible { outline:3px solid #0a6b5a; outline-offset:4px; }"
+    },
+    {
+      "name": "Quiet Button",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "Third and later actions: underlined teal text, no box.",
+      "html": "<button class=\"ds-btn-quiet\">ดูประวัติ</button>",
+      "css": ".ds-btn-quiet { display:inline-flex; align-items:center; min-height:48px; padding:4px 6px; border:0; background:none; color:#0a6b5a; font-weight:600; font-family:inherit; font-size:1rem; text-decoration:underline; text-underline-offset:.2em; } .ds-btn-quiet:hover { color:#07564a; background:#e0f0ec; border-radius:8px; } .ds-btn-quiet:focus-visible { outline:3px solid #0a6b5a; outline-offset:4px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "White, 56px, control-border at 3:1.",
+      "html": "<input class=\"ds-input\" value=\"สมชาย\">",
+      "css": ".ds-input { display:block; width:100%; min-height:56px; padding:12px 14px; background:#fff; border:1px solid #7a8f88; border-radius:8px; color:#14201d; font-family:inherit; font-size:1rem; caret-color:#0a6b5a; } .ds-input:focus-visible { outline:3px solid #0a6b5a; outline-offset:2px; } .ds-input[aria-invalid='true'] { border-color:#b3261e; }"
+    },
+    {
+      "name": "Staff Bar Item",
+      "kind": "nav",
+      "refersTo": "nav-item",
+      "description": "Daily task link; the current place is filled ink, never teal.",
+      "html": "<a class=\"ds-nav\" href=\"#\">สมาชิก</a> <a class=\"ds-nav ds-nav-current\" href=\"#\">วันนี้</a>",
+      "css": ".ds-nav { display:inline-flex; align-items:center; justify-content:center; min-height:56px; padding:8px 24px; border-radius:8px; border:1px solid #7a8f88; background:#fbfcfb; color:#0a6b5a; font-weight:600; text-decoration:none; font-family:inherit; font-size:1rem; } .ds-nav:hover { background:#e0f0ec; } .ds-nav:focus-visible { outline:3px solid #0a6b5a; outline-offset:4px; } .ds-nav-current { background:#14201d; border-color:#14201d; color:#fff; }"
+    },
+    {
+      "name": "Status Pill",
+      "kind": "chip",
+      "refersTo": "pill",
+      "description": "Glyph, word and border form; shown here: confirmed (solid) and waitlisted (double amber).",
+      "html": "<span class=\"ds-pill\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 8.6l3.2 3.2L13 4.8\"/></svg>ยืนยันแล้ว</span> <span class=\"ds-pill ds-pill-wait\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 2.5h8M4 13.5h8M5 2.5c0 3 3 3.6 3 5.5s-3 2.5-3 5.5M11 2.5c0 3-3 3.6-3 5.5s3 2.5 3 5.5\"/></svg>รอคิว</span>",
+      "css": ".ds-pill { display:inline-flex; align-items:center; gap:6px; padding:1px 14px 1px 10px; border-radius:999px; border:2px solid #14201d; background:#fff; color:#14201d; font-weight:600; font-size:.95rem; line-height:1.6; } .ds-pill-wait { border-style:double; border-width:5px; padding:0 12px 0 6px; background:#fbeedd; color:#9c500c; border-color:#9c500c; }"
+    },
+    {
+      "name": "Stubbed Ticket",
+      "kind": "card",
+      "refersTo": "ticket",
+      "description": "Numbered registration: teal-tint stub, vertical dashed perforation with notches, body.",
+      "html": "<div class=\"ds-ticket\"><div class=\"ds-stub\"><span class=\"ds-stub-label\">คิวที่</span><span class=\"ds-stub-num\">12</span></div><div class=\"ds-ticket-body\"><h3>คุณสมชาย ใจดี</h3><p>ลงทะเบียนวันนี้</p></div></div>",
+      "css": ".ds-ticket { position:relative; display:grid; grid-template-columns:104px minmax(0,1fr); background:#fff; border:1px solid #9fb3ad; border-radius:16px; box-shadow:0 1px 0 rgba(20,32,29,.12),0 16px 30px -12px rgba(20,32,29,.45); font-family:Sarabun,Thonburi,sans-serif; color:#14201d; } .ds-stub { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; padding:20px 8px; border-right:2px dashed #8fa39d; background:#e0f0ec; border-radius:16px 0 0 16px; } .ds-stub::before,.ds-stub::after { content:''; position:absolute; right:-12px; width:22px; height:12px; background:#dce8e5; box-shadow:inset 0 3px 4px rgba(20,32,29,.3); } .ds-stub::before { top:-1px; border-radius:0 0 11px 11px; } .ds-stub::after { bottom:-1px; border-radius:11px 11px 0 0; } .ds-stub-label { font-size:.95rem; color:#3f504a; } .ds-stub-num { font-family:Kanit,Sarabun,sans-serif; font-weight:600; font-variant-numeric:tabular-nums; font-size:3rem; line-height:1; } .ds-ticket-body { padding:22px 24px; min-width:0; } .ds-ticket-body h3 { font-family:Kanit,Sarabun,sans-serif; font-weight:500; font-size:1.35rem; line-height:1.4; margin:0 0 .25rem; } .ds-ticket-body p { margin:0; }"
+    },
+    {
+      "name": "Profile Status Strip",
+      "kind": "custom",
+      "refersTo": "ticket",
+      "description": "One ruled white strip with dashed vertical dividers; warning cell on amber tint.",
+      "html": "<ul class=\"ds-strip\"><li><span>สถานะ</span><b>ยืนยันแล้ว</b></li><li><span>เอกสาร</span><b>ครบ</b></li><li class=\"ds-warn\"><span>ผู้ดูแล</span><b>ยังไม่มี</b></li></ul>",
+      "css": ".ds-strip { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); margin:0; padding:0; list-style:none; border:1px solid #9fb3ad; border-radius:12px; background:#fff; overflow:hidden; font-family:Sarabun,Thonburi,sans-serif; color:#14201d; } .ds-strip li { display:flex; flex-direction:column; gap:2px; padding:12px 16px; border-right:2px dashed #b6c8c3; } .ds-strip li:last-child { border-right:0; } .ds-strip span { font-size:.95rem; color:#3f504a; } .ds-strip b { font-weight:600; } .ds-warn { background:#fbeedd; }"
+    },
+    {
+      "name": "Empty State",
+      "kind": "card",
+      "refersTo": "ticket",
+      "description": "A blank ticket with a dashed outline.",
+      "html": "<div class=\"ds-empty\"><p>ยังไม่มีรายการ</p></div>",
+      "css": ".ds-empty { padding:28px 24px; border:2px dashed #b6c8c3; border-radius:16px; background:#fbfcfb; color:#3f504a; font-family:Sarabun,Thonburi,sans-serif; } .ds-empty p { margin:0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Clinic Queue Ticket",
+    "overview": "Every record is a numbered ticket. The page is one cool thermal-paper sheet laid on a pale mint-grey waiting-hall ground; the page title is the ticket header, torn off from the body by a dashed perforation whose ends are punched into the sheet's edges. Near-black green ink does the talking, queue numerals are large and tabular, and rows are divided by tear lines rather than boxes inside boxes. It reads like a Thai clinic or government queue slip, and deliberately unlike a card-grid SaaS dashboard or a Google Form.\n\nThe users are older staff and caregivers on phones and office screens, Thai only. Density is calm and touch-first: 18px body, 48px minimum targets (52-56px for primary controls), generous line height for Thai script. Colour is rationed: ink carries structure and state, teal means \"you can press this\", amber means \"look here\", red means error or destruction.",
+    "keyCharacteristics": [
+      "Thermal sheet on mint ground, separated from its header by a dashed perforation with edge notches.",
+      "Numbered stubbed tickets for registrations; counts and queue numbers in Kanit, tabular, the largest thing in their region.",
+      "Status is a drawn glyph plus a word plus a border form, never hue alone.",
+      "One loud action per region; the rest are secondary, outline, danger or quiet.",
+      "The current place is filled ink, never teal.",
+      "One soft ticket shadow; no hard offsets."
+    ],
+    "rules": [
+      {"name": "The Pressable-Only Teal Rule", "body": "Teal marks things that respond to a press. Status, headings, the current place and decoration use ink or amber.", "section": "colors"},
+      {"name": "The Never-Hue-Alone Rule", "body": "Every status carries a drawn glyph, a word and a border form: solid, dashed, 5px double amber, dotted and struck, solid red on red tint, dotted muted.", "section": "colors"},
+      {"name": "The Numerals-Are-Kanit Rule", "body": "A count or a queue number is Kanit, tabular and the largest thing in its region.", "section": "typography"},
+      {"name": "The 0.95 Floor Rule", "body": "No text below 0.95rem; product users are older and read on phones.", "section": "typography"},
+      {"name": "The Paper-Not-Plastic Rule", "body": "Depth is the one ticket shadow. No hard offset shadows, no glow; the only other emphasis is the 3px teal focus outline.", "section": "elevation"}
+    ],
+    "dos": [
+      "Do put content on the Thermal Sheet over the Waiting-Hall Ground, with the title torn off by a dashed perforation and edge notches.",
+      "Do divide rows and sections with dashed tear lines (perforation), not solid boxes.",
+      "Do pair every status with a glyph, a word and a border form.",
+      "Do set counts and queue numbers in Kanit 600, tabular.",
+      "Do keep targets at 48px or more, primary controls at 52-56px, and control borders at control-border (3:1).",
+      "Do show one primary action per region and demote the rest to secondary, outline, danger or quiet.",
+      "Do mark the current place with Green Ink fill and white text."
+    ],
+    "donts": [
+      "Don't use teal for status, headings, current place or decoration.",
+      "Don't use amber except for waitlisted and attention.",
+      "Don't convey state by colour alone.",
+      "Don't build grids of identical boxes or stacked Google-Forms blocks.",
+      "Don't add hard offset shadows or glow, or replace the ticket shadow with plain borders.",
+      "Don't set text below 0.95rem."
+    ]
+  }
+}

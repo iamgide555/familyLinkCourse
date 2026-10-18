@@ -6,7 +6,12 @@ export function validatedBody(type: Type<unknown>): ValidationPipe {
     transform: true,
     whitelist: true,
     forbidNonWhitelisted: true,
-    exceptionFactory: () =>
-      new AppError(422, 'INVALID_INPUT', 'กรุณาตรวจสอบข้อมูลที่กรอกให้ครบและถูกต้อง'),
+    exceptionFactory: (errors) =>
+      new AppError(
+        422,
+        'INVALID_INPUT',
+        'กรุณาตรวจสอบช่องที่ระบุ',
+        Object.fromEntries(errors.map((error) => [error.property, 'กรุณาตรวจสอบข้อมูลในช่องนี้'])),
+      ),
   });
 }
