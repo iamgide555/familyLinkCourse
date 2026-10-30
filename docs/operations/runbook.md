@@ -39,6 +39,13 @@ Schema changes use the owner role and only through the `migrate` step.
 
 ## 3. LINE and email
 
+**Running without LINE (staff-only mode).** Set `STAFF_ONLY_MODE=true` in `.env.production` and leave every `LINE_*`
+value empty. The API then starts without LINE (email is optional). Staff use the whole website; members have no
+login, LINE is never contacted, and the LINE webhook is off. Every notice that would have gone to a member lands on
+the call list in *ข้อความแจ้งเตือน* for staff to phone (or email, if an email sender is configured). The page says
+"โหมดเจ้าหน้าที่อย่างเดียว". The app refuses to mix this flag with LINE settings. To move to full mode later, set the
+flag to `false`, fill in the LINE and email values below, and restart; no data changes.
+
 LINE (needs admin access to FamilyLink's LINE OA and the LINE Developers console):
 
 1. Create (or reuse) one provider containing a **Messaging API** channel and a **LINE Login** channel.
@@ -55,7 +62,7 @@ LINE (needs admin access to FamilyLink's LINE OA and the LINE Developers console
 
 Email: create a Resend (or compatible) account, verify the sender domain, set `EMAIL_API_KEY` and `EMAIL_FROM`.
 
-The API refuses to start in production without every LINE and email value, with the development identity switch
+Unless `STAFF_ONLY_MODE=true`, the API refuses to start in production without every LINE and email value, with the development identity switch
 on, or with a non-HTTPS origin. This is intended: it fails closed.
 
 ## 4. Everyday checks

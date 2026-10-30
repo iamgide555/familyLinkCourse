@@ -74,3 +74,38 @@ describe('telemetry scrubbing', () => {
     expect(JSON.stringify(scrub({ ok: 'plain text', phoneMobile: '0812345678', nested: { citizenId: 'x', safe: 1 } }))).toBe('{"ok":"plain text","phoneMobile":"[removed]","nested":{"citizenId":"[removed]","safe":1}}');
   });
 });
+
+describe('staff-only production mode (no LINE, optional email)', () => {
+  const staffOnly = (over: Partial<ApplicationConfig> = {}): ApplicationConfig => {
+    const { line: _l, email: _e, ...rest } = production();
+    return { ...rest, staffOnly: true, ...over } as ApplicationConfig;
+  };
+  it('boots without LINE or email, but refuses to mix with LINE settings or the dev identity', () => {
+    expect(() => validateConfig(staffOnly())).not.toThrow();
+    expect(() => validateConfig(staffOnly({ email: production().email! }))).not.toThrow();
+    expect(() => validateConfig(staffOnly({ email: { apiKey: 'k', from: 'not-an-address', apiBase: 'https://api.resend.com' } }))).toThrow(/sender/);
+    expect(() => validateConfig(staffOnly({ line: production().line! }))).toThrow(/Staff-only/);
+    expect(() => validateConfig(staffOnly({ production: false, webOrigin: 'http://127.0.0.1:4200', devIdentityEnabled: true }))).toThrow(/Staff-only/);
+    expect(() => validateConfig(staffOnly({ webOrigin: 'http://familylink.example.test' }))).toThrow(/web origin/);
+  });
+  it('is switched on by STAFF_ONLY_MODE and never by default', () => {
+    const b64 = (n: number) => Buffer.alloc(32, n).toString('base64');
+    const env = { NODE_ENV: 'production', DATABASE_URL: 'postgresql://x', ORGANIZATION_ID: 'org', WEB_ORIGIN: 'https://familylink.example.test', FIELD_ENCRYPTION_KEY: b64(1), BLIND_INDEX_KEY: b64(2), SESSION_SECRET: b64(3) };
+    expect(() => loadConfig(env)).toThrow(/LINE configuration/);
+    const config = loadConfig({ ...env, STAFF_ONLY_MODE: 'true' });
+    expect(config).toMatchObject({ staffOnly: true, production: true });
+    expect(config.line).toBeUndefined();
+    expect(() => loadConfig({ ...env, STAFF_ONLY_MODE: 'true', DEV_IDENTITY_ENABLED: 'true' })).toThrow(/Development identity/);
+  });
+  it('boots in production: staff API up, member identity closed, nothing is ever delivered', async () => {
+    process.env['PDF_RENDERER_URL'] = 'http://127.0.0.1:3002';
+    const live = await createTestApp({ production: true, staffOnly: true, devIdentityEnabled: false, webOrigin: 'https://familylink.example.test' });
+    try {
+      const api = request(live.app.getHttpServer());
+      expect((await api.get('/api/health')).status).toBe(200);
+      expect((await request(live.app.getHttpServer()).get('/api/member/me').set('x-dev-line-user-id', 'synthetic-attacker')).status).toBe(401);
+      expect((await request(live.app.getHttpServer()).get('/api/member/me').set('Authorization', 'Bearer forged-token')).status).toBe(401);
+      expect((await request(live.app.getHttpServer()).post('/api/line/webhook').send({ events: [] })).status).toBe(404);
+    } finally { await live.close(); }
+  });
+});

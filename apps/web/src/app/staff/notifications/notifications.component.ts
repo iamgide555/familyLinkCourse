@@ -5,7 +5,7 @@ import type { CallGroup } from '../../../../../../packages/contracts/src/notific
 import { errorText, shortDate, thaiDateTime } from '../../member/shared/thai';
 
 type Item = { id: string; kind: string; kindWord: string; status: string; channel: string; attempts: number; lastErrorCode: string | null; createdAt: string; sentAt: string | null; nextAttemptAt: string | null; recipient: string; phone: string; targetDate: string | null };
-type Summary = { followUp: number; queued: number; sentThisMonth: number; delivery: 'live' | 'simulated'; linePushThisMonth?: number; lineMonthlyQuota?: number | null };
+type Summary = { followUp: number; queued: number; sentThisMonth: number; delivery: 'live' | 'simulated' | 'staff_only'; linePushThisMonth?: number; lineMonthlyQuota?: number | null };
 type Simulated = { notificationId: string; channel: 'line' | 'email'; recipient: string; subject: string; text: string; at: string };
 const REASON: Record<string, string> = { no_channel: 'ไม่มี LINE หรืออีเมลที่ใช้ได้', line_unavailable: 'LINE ใช้ไม่ได้', no_email: 'ไม่มีอีเมล', quota: 'โควตาข้อความ LINE เต็ม', auth: 'ตั้งค่าบริการส่งข้อความไม่ถูกต้อง', network: 'เครือข่ายขัดข้อง', rate_limited: 'ส่งถี่เกินกำหนด' };
 
@@ -16,6 +16,7 @@ const REASON: Record<string, string> = { no_channel: 'ไม่มี LINE ห�
     @if (summary(); as s) {
       <p class="page-intro">
         @if (s.delivery === 'simulated') { <strong>โหมดทดสอบ:</strong> ระบบยังไม่ได้ส่งข้อความจริงไปยัง LINE หรืออีเมล ข้อความด้านล่างคือสิ่งที่จะถูกส่ง }
+        @else if (s.delivery === 'staff_only') { <strong>โหมดเจ้าหน้าที่อย่างเดียว:</strong> ระบบไม่ส่งข้อความทาง LINE ทุกรายการจะแสดงในรายชื่อที่ต้องโทรแจ้งด้านล่าง ให้เจ้าหน้าที่โทรแจ้งเอง }
         @else { ระบบส่งทาง LINE ก่อน ถ้า LINE ใช้ไม่ได้หรือส่งไม่สำเร็จจึงส่งทางอีเมล และถ้าไม่มีช่องทางใดสำเร็จจะแสดงด้านล่างให้เจ้าหน้าที่ติดต่อเอง }
       </p>
       <div class="roster-counts" role="status"><span>รอส่ง <strong>{{ s.queued }}</strong></span><span>ส่งแล้ว <strong>{{ s.sentThisMonth }}</strong></span><span>ต้องติดตามเอง <strong>{{ s.followUp }}</strong></span>

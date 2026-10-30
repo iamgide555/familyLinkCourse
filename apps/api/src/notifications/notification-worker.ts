@@ -35,6 +35,12 @@ export class NotificationWorker {
     @Inject(SimulatedTransport) private readonly simulated: SimulatedTransport,
   ) {}
 
+  /** Staff-only deployments have no LINE, and no email unless it is configured; never fall back to the simulator there. */
+  private usableEmail(address: string | null | undefined): string | null {
+    const trimmed = address?.trim();
+    if (!trimmed) return null;
+    return this.config.staffOnly && !this.config.email ? null : trimmed;
+  }
   private transport(channel: 'line' | 'email'): Transport {
     if (channel === 'line') return this.config.line ? this.line : this.simulated.channelFor('line');
     return this.config.email ? this.email : this.simulated.channelFor('email');
@@ -70,14 +76,14 @@ export class NotificationWorker {
       const member = await this.db.member.findFirst({ where: { organizationId: n.organizationId, id: n.recipientId, deletedAt: null } });
       if (!member) return null;
       const la = await account(member.lineAccountId);
-      return { name: `${member.firstName} ${member.lastName}`, memberId: member.id, lineUserId: la?.lineUserId ?? null, lineReachable: !!la?.reachable, email: member.email.trim() || null };
+      return { name: `${member.firstName} ${member.lastName}`, memberId: member.id, lineUserId: la?.lineUserId ?? null, lineReachable: !!la?.reachable, email: this.usableEmail(member.email) };
     }
     if (n.recipientKind === 'signup_request') {
       const request = await this.db.signupRequest.findFirst({ where: { organizationId: n.organizationId, id: n.recipientId } });
       if (!request) return null;
       const submitted = JSON.parse(this.crypto.decrypt(request.submittedDataEncrypted as EncryptedValue)) as { firstName?: string; lastName?: string; email?: string };
       const la = await account(request.lineAccountId);
-      return { name: `${submitted.firstName ?? ''} ${submitted.lastName ?? ''}`.trim(), memberId: null, lineUserId: la?.lineUserId ?? null, lineReachable: !!la?.reachable, email: submitted.email?.trim() || null };
+      return { name: `${submitted.firstName ?? ''} ${submitted.lastName ?? ''}`.trim(), memberId: null, lineUserId: la?.lineUserId ?? null, lineReachable: !!la?.reachable, email: this.usableEmail(submitted.email) };
     }
     const la = await account(n.recipientId);
     return la ? { name: la.displayName || 'สมาชิก', memberId: null, lineUserId: la.lineUserId, lineReachable: la.reachable, email: null } : null;
@@ -88,7 +94,7 @@ export class NotificationWorker {
     return this.db.notification.count({ where: { organizationId, channel: 'line', status: 'sent', sentAt: { gte: new Date(`${month}-01T00:00:00+07:00`) } } });
   }
   private async lineAvailable(n: Notification, r: Resolved, now: Date): Promise<boolean> {
-    if (!r.lineUserId || !r.lineReachable) return false;
+    if (this.config.staffOnly || !r.lineUserId || !r.lineReachable) return false;
     const quota = this.config.line?.monthlyQuota;
     return !(quota && (await this.lineUsage(n.organizationId, now)) >= quota);
   }
@@ -128,7 +134,7 @@ export class NotificationWorker {
     const targets: Array<{ memberId: string | null; email: string | null; items: NotificationItem[] }> = [];
     if (perMember) {
       const members = await this.db.member.findMany({ where: { organizationId: n.organizationId, id: { in: memberIds }, deletedAt: null } });
-      for (const m of members) targets.push({ memberId: m.id, email: m.email.trim() || null, items: built.items.filter((i) => i.memberId === m.id) });
+      for (const m of members) targets.push({ memberId: m.id, email: this.usableEmail(m.email), items: built.items.filter((i) => i.memberId === m.id) });
     } else targets.push({ memberId: r.memberId, email: r.email, items: built.items });
     const withEmail = targets.filter((t) => t.email);
     if (!withEmail.length) return this.finish(n, { status: 'staff_followup', channel: 'line', attempts: n.attempts, lastErrorCode: !code || code === 'line_unavailable' ? 'no_channel' : code });

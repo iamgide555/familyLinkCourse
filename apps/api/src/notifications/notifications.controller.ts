@@ -34,7 +34,7 @@ export class NotificationsController {
       this.worker.lineUsage(org),
     ]);
     // Live LINE quota is only visible to administrators.
-    return { followUp, queued, sentThisMonth, delivery: this.config.line ? 'live' : 'simulated', ...(req.actor.role === 'admin' ? { linePushThisMonth: usage, lineMonthlyQuota: this.config.line?.monthlyQuota ?? null } : {}) };
+    return { followUp, queued, sentThisMonth, delivery: this.config.staffOnly ? 'staff_only' : this.config.line ? 'live' : 'simulated', ...(req.actor.role === 'admin' ? { linePushThisMonth: usage, lineMonthlyQuota: this.config.line?.monthlyQuota ?? null } : {}) };
   }
   /** Notices staff must deliver by phone, grouped by course run, with the text to read out. */
   @Get('call-list')
