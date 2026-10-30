@@ -25,7 +25,8 @@ type Detail = { current: SnapshotView | null; history: SnapshotView[] };
     @for (reg of items(); track reg.id) {
       <article class="review-item" [attr.aria-label]="'การลงทะเบียนของ ' + reg.memberName">
         <h3><a [routerLink]="['/staff/members', reg.memberId]">{{ reg.memberName }}</a></h3>
-        <p class="record-state">เลขสมาชิก {{ reg.memberNumber }} · {{ reg.source === 'walkin' ? 'ลงทะเบียนหน้างาน' : reg.registeredBy === 'staff' ? 'เจ้าหน้าที่ลงทะเบียนให้' : 'สมาชิกลงทะเบียนเอง' }} · {{ reg.unsigned ? 'ยังไม่ได้ลงนาม' : 'ลงนามแล้ว' }}</p>
+        <p class="record-state">เลขสมาชิก {{ reg.memberNumber }} · {{ reg.source === 'walkin' ? 'ลงทะเบียนหน้างาน' : reg.registeredBy === 'staff' ? 'เจ้าหน้าที่ลงทะเบียนให้' : 'สมาชิกลงทะเบียนเอง' }} · {{ reg.unsigned ? 'ยังไม่ได้ลงนาม' : 'ลงนามแล้ว' }}
+          @if (reg.contact === 'phone_only') { · <strong class="phone-only">ไม่มี LINE/อีเมล → โทรแจ้ง</strong> }</p>
         <ul class="entry-list">
           @for (e of reg.entries; track $index) {
             <li>

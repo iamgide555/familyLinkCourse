@@ -65,6 +65,7 @@ import { EmailTransport } from './notifications/email.transport.js';
 import { SimulatedTransport } from './notifications/simulated.transport.js';
 import { MessageBuilder } from './notifications/message-builder.js';
 import { NotificationWorker } from './notifications/notification-worker.js';
+import { CallList } from './notifications/call-list.service.js';
 import { Reminders } from './notifications/reminders.service.js';
 import { NotificationsController } from './notifications/notifications.controller.js';
 import { Retention } from './jobs/retention.job.js';
@@ -114,7 +115,7 @@ export async function createApplication(
       Documents,
       Linking,
       Courses, Questions, RunLock, Queue, Snapshots, Bookings, Registrations, Walkins, Attendance, Memberships, Dashboard, Reports, OrgSettings,
-      LineTransport, EmailTransport, SimulatedTransport, MessageBuilder, NotificationWorker, Reminders, Retention, Scheduler, LineApiClient, RichMenus, LineIdentityAdapter,
+      LineTransport, EmailTransport, SimulatedTransport, MessageBuilder, NotificationWorker, CallList, Reminders, Retention, Scheduler, LineApiClient, RichMenus, LineIdentityAdapter,
       ProfileChanges,
       FileStore,
       DevIdentityAdapter,

@@ -13,7 +13,7 @@ import { STATUS_WORD, errorText, shortDate } from '../../member/shared/thai';
     @if (!items().length && !error()) { <p class="empty-state">ยังไม่เคยลงทะเบียนคอร์ส</p> }
     <ul class="doc-list">
       @for (r of items(); track r.id) {
-        <li><span><a [routerLink]="['/staff/runs', r.runId]"><strong>{{ r.courseName }} · {{ r.batchName }}</strong></a><br />
+        <li><span><a [routerLink]="['/staff/runs', r.runId]"><strong>{{ r.courseName }} · {{ r.batchName }}</strong></a>@if (r.contact === 'phone_only') { <strong class="phone-only">ไม่มี LINE/อีเมล → โทรแจ้ง</strong> }<br />
           <span class="record-state">@for (e of r.entries; track $index) { {{ e.sessionId ? 'วันที่ ' + e.dayNo + ' (' + date(e.date!) + ')' : 'ทั้งคอร์ส' }}: {{ word(e.status) }}{{ e.attendance ? ' · ' + (e.attendance === 'present' ? 'มาเรียน' : 'ไม่มา') : '' }}{{ $last ? '' : ' | ' }} }</span></span></li>
       }
     </ul>

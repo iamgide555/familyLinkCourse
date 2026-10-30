@@ -1018,3 +1018,12 @@ a:hover { color: var(--action-hover); }
 .req-badge { margin-left: 4px; padding: 1px 10px; border-radius: 999px; background: var(--amber-tint); color: var(--amber); font-size: 0.95rem; font-weight: 600; white-space: nowrap; }
 .id-field { grid-column: 1 / -1; }
 .id-field > input { max-width: 420px; }
+
+/* Members staff can only reach by phone */
+.phone-only { padding: 1px 10px; border-radius: 999px; background: var(--amber-tint); color: var(--amber); font-size: 0.95rem; font-weight: 600; }
+.call-text { display: inline-block; margin-top: 4px; }
+@media print {
+  .staff-bar, .no-print, .roster-counts, .notice { display: none !important; }
+  .member-workspace > *:not(.call-list):not(h1) { display: none !important; }
+  .review-item { break-inside: avoid; box-shadow: none; }
+}

@@ -15,3 +15,14 @@ export type NotificationEvent = {
   recipient: RecipientRef;
   entityRefs: Record<string, Id[]>;
 };
+
+/** How staff can reach a member: by LINE, else email, else only by phone. */
+export type ContactChannel = 'line' | 'email' | 'phone_only';
+export type CallItem = {
+  id: Id; kind: NotificationKind; kindWord: string; reason: string; memberId: Id; memberName: string;
+  phone: string; text: string; createdAt: string;
+};
+/** Notices staff must deliver by phone, grouped by course run (`runId` null for notices about no run). */
+export type CallGroup = {
+  runId: Id | null; courseName: string; batchName: string; nextSessionDate: string | null; items: CallItem[];
+};

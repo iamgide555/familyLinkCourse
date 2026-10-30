@@ -1,6 +1,7 @@
 import type { BookingStatus, Id } from './core.js';
 import type { Answers, QuestionDefinition } from './questions.js';
 import type { Availability } from './courses.js';
+import type { ContactChannel } from './notifications.js';
 export type BookingInput = { runId: Id; memberId: Id; sessionIds: Id[]; answers: Answers; operationKey: string };
 export type PoolOutcome = { sessionId: Id | null; status: BookingStatus | 'refused'; queuePosition: number | null };
 export type BookingResult = { registrationId: Id | null; outcomes: PoolOutcome[] };
@@ -9,7 +10,7 @@ export type EntryView = { sessionId: Id | null; date: string | null; startTime: 
 export type RegistrationView = {
   id: Id; runId: Id; memberId: Id; memberName: string; memberNumber: string; perSession: boolean;
   courseName: string; batchName: string; source: string; registeredBy: string; createdAt: string;
-  entries: EntryView[]; summary: string; unsigned: boolean; canSelfCancel: boolean; cancelDeadline: string | null;
+  entries: EntryView[]; summary: string; unsigned: boolean; contact: ContactChannel; canSelfCancel: boolean; cancelDeadline: string | null;
 };
 export type SnapshotView = { version: number; createdAt: string; createdBy: string; member: Record<string, unknown>; questions: QuestionDefinition[]; answers: Answers };
 export type MemberRunSession = { id: Id; dayNo: number; date: string; startTime: string; endTime: string; location: string; onlineUrl: string; availability: Availability; status: 'scheduled' | 'cancelled' };

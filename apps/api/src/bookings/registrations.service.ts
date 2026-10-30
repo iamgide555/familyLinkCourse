@@ -11,6 +11,7 @@ import { Questions } from '../questions/questions.service.js';
 import { ACTIVE, registrationState, selfCancelDeadline, type PolicyRun, type PolicySession } from './booking-policy.js';
 import { queuePosition, reserved } from './pools.js';
 import { Snapshots } from './snapshots.service.js';
+import { contactChannel } from '../notifications/contact-channel.js';
 
 type Loaded = Awaited<ReturnType<Registrations['load']>>[number];
 const WORDS: Record<string, string> = { submitted: 'รอเจ้าหน้าที่อนุมัติ', confirmed: 'ยืนยันแล้ว', waitlisted: 'อยู่ในคิวรอ', rejected: 'ไม่อนุมัติ', cancelled: 'ยกเลิกแล้ว' };
@@ -37,6 +38,7 @@ export class Registrations {
     const now = this.clock.now();
     const sessions = run.sessions as PolicySession[];
     const attendance = await tx.attendance.findMany({ where: { organizationId, memberId: row.memberId, session: { runId: run.id } } });
+    const lineAccount = row.member.lineAccountId ? await tx.lineAccount.findFirst({ where: { organizationId, id: row.member.lineAccountId } }) : null;
     const att = (sessionId: string) => (attendance.find((a) => a.sessionId === sessionId)?.status as 'present' | 'absent' | undefined) ?? null;
     const entries: EntryView[] = [];
     if (run.perSessionRegistration) {
@@ -61,7 +63,7 @@ export class Registrations {
     return {
       id: row.id, runId: run.id, memberId: row.memberId, memberName: `${row.member.firstName} ${row.member.lastName}`, memberNumber: row.member.memberNumber ?? '',
       perSession: run.perSessionRegistration, courseName: run.course.name, batchName: run.batchName, source: row.source, registeredBy: row.registeredBy,
-      createdAt: row.createdAt.toISOString(), entries, summary, unsigned: !row.member.signedFormAt,
+      createdAt: row.createdAt.toISOString(), entries, summary, unsigned: !row.member.signedFormAt, contact: contactChannel(row.member, lineAccount),
       canSelfCancel: run.status !== 'cancelled' && open.length > 0, cancelDeadline: latest?.toISOString() ?? null,
     };
   }

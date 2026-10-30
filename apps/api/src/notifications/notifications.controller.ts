@@ -8,12 +8,9 @@ import { Audit } from '../audit/audit.service.js';
 import { FieldCrypto, type EncryptedValue } from '../crypto/field-crypto.js';
 import { NotificationWorker } from './notification-worker.js';
 import { SimulatedTransport } from './simulated.transport.js';
+import { CallList } from './call-list.service.js';
+import { KIND_WORD } from './kind-words.js';
 
-const KIND_WORD: Record<string, string> = {
-  'signup.linked': 'ผลใบสมัคร', 'signup.created': 'ผลใบสมัคร', 'signup.rejected': 'ผลใบสมัคร', 'profile.approved': 'ผลแก้ไขข้อมูล', 'profile.rejected': 'ผลแก้ไขข้อมูล',
-  'registration.submitted': 'ผลลงทะเบียน', 'registration.confirmed': 'ผลลงทะเบียน', 'registration.waitlisted': 'ผลลงทะเบียน', 'registration.approved': 'ผลอนุมัติ', 'registration.rejected': 'ผลอนุมัติ',
-  'waitlist.promoted': 'เลื่อนจากคิวรอ', 'session.reminder': 'เตือนวันเรียน', 'session.cancelled': 'ยกเลิกวันเรียน', 'run.cancelled': 'ยกเลิกรอบ', 'session.rescheduled': 'เลื่อนวันเรียน',
-};
 @Roles('admin', 'staff')
 @Controller('notifications')
 export class NotificationsController {
@@ -25,6 +22,7 @@ export class NotificationsController {
     @Inject(APP_CONFIG) private readonly config: ApplicationConfig,
     @Inject(NotificationWorker) private readonly worker: NotificationWorker,
     @Inject(SimulatedTransport) private readonly simulated: SimulatedTransport,
+    @Inject(CallList) private readonly callList: CallList,
   ) {}
   @Get('summary')
   async summary(@Req() req: StaffRequest) {
@@ -37,6 +35,13 @@ export class NotificationsController {
     ]);
     // Live LINE quota is only visible to administrators.
     return { followUp, queued, sentThisMonth, delivery: this.config.line ? 'live' : 'simulated', ...(req.actor.role === 'admin' ? { linePushThisMonth: usage, lineMonthlyQuota: this.config.line?.monthlyQuota ?? null } : {}) };
+  }
+  /** Notices staff must deliver by phone, grouped by course run, with the text to read out. */
+  @Get('call-list')
+  async calls(@Req() req: StaffRequest) {
+    const groups = await this.callList.groups(req.actor.organizationId);
+    await this.db.$transaction((tx) => this.audit.record(tx, req.actor, { action: 'notification.call_list', entity: 'notification', entityId: req.actor.userId, fields: ['fields'] }));
+    return { groups };
   }
   @Get()
   async list(@Req() req: StaffRequest, @Query('status') status?: string) {
