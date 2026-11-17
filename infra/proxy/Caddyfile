@@ -13,7 +13,7 @@ http://{$DOMAIN} {
 		Referrer-Policy "no-referrer"
 		Permissions-Policy "camera=(), microphone=(), geolocation=()"
 		# LIFF loads LINE's SDK and calls LINE endpoints from the browser; everything else is first-party.
-		Content-Security-Policy "default-src 'self'; script-src 'self' https://static.line-scdn.net; connect-src 'self' https://api.line.me https://access.line.me https://liff.line.me; img-src 'self' data: blob: https://profile.line-scdn.net; style-src 'self' 'unsafe-inline'; font-src 'self'; frame-ancestors 'self'; object-src 'none'; base-uri 'self'"
+		Content-Security-Policy "default-src 'self'; script-src 'self' https://static.line-scdn.net; connect-src 'self' https://api.line.me https://access.line.me https://liff.line.me https://liffsdk.line-scdn.net; img-src 'self' data: blob: https://profile.line-scdn.net; style-src 'self' 'unsafe-inline'; font-src 'self'; frame-ancestors 'self'; object-src 'none'; base-uri 'self'"
 		-Server
 	}
 
