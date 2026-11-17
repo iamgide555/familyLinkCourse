@@ -120,6 +120,8 @@ services:
 
   backup:
     <<: *restart
+    # dcron (`crond -f`) fails with "setpgid: Operation not permitted" when it is PID 1.
+    init: true
     build:
       context: .
       dockerfile: infra/backup/Dockerfile

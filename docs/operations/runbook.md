@@ -23,7 +23,10 @@ Schema changes use the owner role and only through the `migrate` step.
 
 1. Server needs Docker and the Compose plugin. Admin access is by Tailscale SSH only; do not open SSH to the internet.
 2. Copy `.env.production.example` to `.env.production` and fill it in. Generate the three keys with
-   `openssl rand -base64 32` (three different values).
+   `openssl rand -base64 32` (three different values). Use `openssl rand -hex 24` for the two database passwords:
+   base64 characters (`/ + =`) break the database URL. Then run `ln -s .env.production .env` so every plain
+   `docker compose ...` command below also reads these values for `${...}` substitution (the `env_file` lines in
+   `compose.yml` alone do not do that, and `up` fails with "required variable ... is missing").
 3. **Key custody (do this before anything else).** Put all three keys in the password manager *and* print one sealed
    copy for a FamilyLink admin. The keys are never stored in the database, Git, images or backups. Without them the
    encrypted data and uploaded files cannot be read — a backup alone is not enough.
