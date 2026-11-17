@@ -116,8 +116,23 @@ test('the signup form is usable at phone width and passes automated accessibilit
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   const results = await new AxeBuilder({ page }).analyze();
   expect(results.violations.map((v) => `${v.id}: ${v.nodes[0]?.html}`)).toEqual([]);
+  await page.getByLabel(/ข้าพเจ้าได้อ่านและรับทราบประกาศความเป็นส่วนตัว/).check();
   await page.getByRole('button', { name: 'ส่งใบสมัคร' }).click();
   await expect(page.getByRole('alert')).toBeFocused();
   await expect(page.getByLabel('ชื่อ', { exact: true })).toHaveAttribute('aria-invalid', 'true');
+  await context.close();
+});
+
+test('the submit button stays disabled until the privacy notice is acknowledged', async ({ browser }) => {
+  const { page, context } = await lineContext(browser, `consent-${unique()}`);
+  await page.goto('/member/signup');
+  const submit = page.getByRole('button', { name: 'ส่งใบสมัคร' });
+  await expect(submit).toBeDisabled();
+  await expect(page.getByText('ติ๊กรับทราบประกาศความเป็นส่วนตัวด้านบนก่อน')).toBeVisible();
+  const privacy = page.getByLabel(/ข้าพเจ้าได้อ่านและรับทราบประกาศความเป็นส่วนตัว/);
+  await privacy.check();
+  await expect(submit).toBeEnabled();
+  await privacy.uncheck();
+  await expect(submit).toBeDisabled();
   await context.close();
 });

@@ -186,7 +186,8 @@ const MAX_BYTES = 10_000_000;
         </fieldset>
 
         <div class="form-actions">
-          <button class="button-primary" type="submit" [disabled]="submitting() || uploading()">{{ submitting() ? 'กำลังส่งข้อมูล…' : 'ส่งใบสมัคร' }}</button>
+          <button class="button-primary" type="submit" [disabled]="submitting() || uploading() || !f.privacy" aria-describedby="submit-hint">{{ submitting() ? 'กำลังส่งข้อมูล…' : 'ส่งใบสมัคร' }}</button>
+          @if (!f.privacy) { <p id="submit-hint" class="section-intro">ติ๊กรับทราบประกาศความเป็นส่วนตัวด้านบนก่อน จึงจะส่งใบสมัครได้</p> }
           @if (hasIdentity()) { <a class="button-secondary" routerLink="/member/profile">ยกเลิก</a> }
         </div>
       </form>
