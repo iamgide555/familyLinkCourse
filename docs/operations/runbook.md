@@ -27,7 +27,9 @@ Schema changes use the owner role and only through the `migrate` step.
 3. **Key custody (do this before anything else).** Put all three keys in the password manager *and* print one sealed
    copy for a FamilyLink admin. The keys are never stored in the database, Git, images or backups. Without them the
    encrypted data and uploaded files cannot be read — a backup alone is not enough.
-4. Point `DOMAIN` at the server (A/AAAA record; router forwards 80 and 443 to the server).
+4. Public access goes through a Cloudflare Tunnel; no router port forwarding. Once: `cloudflared tunnel create familylink`,
+   `cloudflared tunnel route dns familylink <DOMAIN>`, then copy `infra/cloudflared/familylink.example.yml` to
+   `~/.cloudflared/familylink.yml` and put the tunnel id in it. The `cloudflared` service in `compose.yml` reads that folder.
 5. Second disk: set `BACKUP_DIR` to a folder on it. Create the encrypted off-site remote with `rclone config`
    (type `crypt` over Google Drive), put `rclone.conf` in `RCLONE_CONFIG_DIR`, set `RCLONE_REMOTE`.
 6. `docker compose up -d --build`. Wait until `docker compose ps` shows `api`, `db`, `pdf` healthy.

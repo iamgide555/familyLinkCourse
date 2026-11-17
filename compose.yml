@@ -1,4 +1,5 @@
-# FamilyLink production stack. Only `proxy` publishes ports; everything else stays on internal networks.
+# FamilyLink production stack. No port is published to the host or the router: the public entry is a Cloudflare
+# Tunnel (`cloudflared`) that forwards to `proxy`, the same way the other projects on this server are exposed.
 # Secrets live in ./.env.production (never in Git, images or backups). See docs/operations/runbook.md.
 name: familylink
 
@@ -6,12 +7,11 @@ x-restart: &restart
   restart: unless-stopped
 
 services:
+  # HTTPS is terminated by Cloudflare. Caddy only routes /api and the web app and adds security headers.
   proxy:
     <<: *restart
     image: caddy:2
-    ports:
-      - "80:80"
-      - "443:443"
+    expose: ["80"]
     environment:
       DOMAIN: ${DOMAIN:?set DOMAIN in .env.production}
     volumes:
@@ -20,6 +20,18 @@ services:
       - caddy_config:/config
     networks: [public]
     depends_on: [web, api]
+
+  # Outbound tunnel to Cloudflare. Config and credentials live outside Git in ~/.cloudflared (see
+  # infra/cloudflared/familylink.example.yml). Same pattern as the other apps on this server.
+  cloudflared:
+    <<: *restart
+    image: cloudflare/cloudflared:latest
+    user: "${PUID:-1000}:${PGID:-1000}"
+    command: tunnel --config /etc/cloudflared/familylink.yml run
+    volumes:
+      - ~/.cloudflared:/etc/cloudflared:ro
+    networks: [public, egress]
+    depends_on: [proxy]
 
   web:
     <<: *restart

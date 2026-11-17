@@ -1,5 +1,10 @@
-# Public entry point. HTTPS certificates are issued and renewed automatically.
-{$DOMAIN} {
+# Entry point behind the Cloudflare Tunnel. Cloudflare terminates HTTPS, so Caddy serves plain HTTP on the internal
+# network and must not try to fetch its own certificates.
+{
+	auto_https off
+}
+
+http://{$DOMAIN} {
 	encode gzip
 
 	header {

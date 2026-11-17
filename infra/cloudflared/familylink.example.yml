@@ -1,0 +1,10 @@
+# Copy to ~/.cloudflared/familylink.yml on the server and put the tunnel's id in both places.
+# Create the tunnel once:  cloudflared tunnel create familylink
+# Then point DNS at it:    cloudflared tunnel route dns familylink familylink.wongnok.dev
+tunnel: <TUNNEL_ID>
+credentials-file: /etc/cloudflared/<TUNNEL_ID>.json
+
+ingress:
+  - hostname: familylink.wongnok.dev
+    service: http://proxy:80
+  - service: http_status:404
