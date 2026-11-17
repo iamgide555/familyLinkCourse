@@ -57,7 +57,7 @@ LINE (needs admin access to FamilyLink's LINE OA and the LINE Developers console
 2. Messaging API channel: issue a long-lived channel access token → `LINE_CHANNEL_ACCESS_TOKEN`; channel secret →
    `LINE_CHANNEL_SECRET`. Webhook URL: `https://<DOMAIN>/api/line/webhook`; turn *Use webhook* on.
 3. LINE Login channel: note the Channel ID → `LINE_LOGIN_CHANNEL_ID`. Add a LIFF app with endpoint URL
-   `https://<DOMAIN>/member/profile` (scope `openid profile`) → `LINE_LIFF_ID`.
+   `https://<DOMAIN>` with no path (LINE appends a link's sub-path, so `liff.line.me/<id>/member/signup` opens `/member/signup`; scope `openid profile`) → `LINE_LIFF_ID`.
 4. Rich menus: create two in LINE OA Manager / API. The **guest** menu (button *สมัครสมาชิก* → LIFF `/member/signup`)
    is set as the default for all users. The **member** menu (*ลงทะเบียนคอร์ส* → `/member/courses`, *โปรไฟล์* →
    `/member/profile`, *เพิ่มสมาชิก* → `/member/signup?for=another`) gets its id in `LINE_RICH_MENU_MEMBER`. The API

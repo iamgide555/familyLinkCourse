@@ -1,5 +1,6 @@
 import type { Routes } from '@angular/router';
 import { staffGuard } from './core/staff.guard';
+import { rootRedirect } from './core/root-redirect';
 export const routes: Routes = [
   {
     path: 'staff/login',
@@ -66,6 +67,6 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'profile' },
     ],
   },
-  { path: '', pathMatch: 'full', redirectTo: 'staff' },
+  { path: '', pathMatch: 'full', redirectTo: ({ queryParams }) => rootRedirect(queryParams) },
   { path: '**', redirectTo: 'staff' },
 ];

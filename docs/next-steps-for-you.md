@@ -66,7 +66,7 @@ The app refuses to start in production without every LINE and email value, with 
 Follow `docs/operations/runbook.md` section 3.
 
 - [ ] Messaging API channel: access token, channel secret, webhook `https://<domain>/api/line/webhook`, webhook on.
-- [ ] LINE Login channel and a LIFF app pointing at `https://<domain>/member/profile`.
+- [ ] LINE Login channel and a LIFF app whose endpoint URL is `https://<domain>` (no path).
 - [ ] Two rich menus (guest and member) and their ids.
 - [ ] Set the monthly quota value.
 - [ ] Verify the email sender and set the API key.
