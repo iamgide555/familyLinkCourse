@@ -139,6 +139,15 @@ export class Signup {
         ? await tx.member.findMany({ where: { organizationId: orgId, deletedAt: null, citizenIdHash: this.crypto.citizenIdIndex(orgId, input.citizenId) } })
         : [];
       const matches = [...byName, ...byId.filter((m) => !byName.some((n) => n.id === m.id))];
+      // The same LINE account already holds this person (signing up for itself again, or the same ID number): staff
+      // have nothing to decide, so do not queue a review. A same-name match registered for "another" stays in review,
+      // because it may be a twin or sibling. Throwing rolls the transaction back, which also leaves any attached draft
+      // files unconsumed.
+      const own = lineAccountId
+        ? matches.find((m) => m.lineAccountId === lineAccountId && (input.registeringFor === 'self' || byId.some((b) => b.id === m.id)))
+        : undefined;
+      if (own)
+        throw new AppError(409, 'ALREADY_REGISTERED', `ข้อมูลนี้อยู่ในบัญชี LINE ของคุณแล้ว (เลขสมาชิก ${own.memberNumber ?? '-'}) ไม่ต้องสมัครซ้ำ ดูได้ที่หน้าโปรไฟล์`);
       let result: SignupResult;
       if (matches.length) {
         const request = await tx.signupRequest.create({ data: {

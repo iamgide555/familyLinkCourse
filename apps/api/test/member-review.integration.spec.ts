@@ -35,6 +35,23 @@ describe('signup review, LINE links and caregiver access', () => {
   });
   afterAll(async () => { if (ctx) await ctx.close(); });
 
+  it('tells a LINE account that already holds this person so, instead of queuing a review nobody can act on', async () => {
+    const original = body('สมัครซ้ำ', 'สอง', '1975-05-05');
+    const first = await signup('twice1', original);
+    expect(first.body.kind).toBe('created');
+    const before = (await pending()).length;
+    const again = await signup('twice1', body('สมัครซ้ำ', 'สอง', '1975-05-05'));
+    expect(again.status).toBe(409);
+    expect(again.body.code).toBe('ALREADY_REGISTERED');
+    expect((await pending()).length).toBe(before);
+    const sameId = await signup('twice1', body('ชื่อต่างกัน', 'สอง', '1999-09-09', { citizenId: original.citizenId, registeringFor: 'another', relationship: 'บุตร' }));
+    expect(sameId.body.code).toBe('ALREADY_REGISTERED');
+    const other = await signup('twice1', body('สมาชิกอีกคน', 'สอง', '2010-02-02', { registeringFor: 'another', relationship: 'บุตร' }));
+    expect(other.body.kind).toBe('created');
+    const me = await http().get('/api/member/me').set(line('twice1'));
+    expect(me.body.members).toHaveLength(2);
+  });
+
   it('shows staff the candidates and lets only the applicant see a waiting state', async () => {
     const original = await signup('orig1', body('ต้นฉบับ', 'หนึ่ง', '1980-01-01'));
     expect(original.body.kind).toBe('created');
